@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Site Info Manager</title>
+  <title>Site Info</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -27,7 +27,7 @@
               <line x1="12" y1="17" x2="12" y2="21" />
             </svg>
           </div>
-          <h1>Site Info Manager</h1>
+          <h1>SiteVault</h1>
           <span class="site-count-badge" id="siteCountBadge">0 sites</span>
         </div>
 
@@ -39,15 +39,15 @@
               <polyline points="17 8 12 3 7 8"></polyline>
               <line x1="12" y1="3" x2="12" y2="15"></line>
             </svg>
-            Export / Import
+            <span class="btn-text">Export / Import</span>
           </button>
-          <button class="btn btn-primary" id="btnOpenAddModal">
+          <button class="btn btn-primary" id="btnOpenAddModal" title="Add New Site">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-            Add New Site
+            <span class="btn-text">Add New Site</span>
           </button>
         </div>
       </div>
@@ -156,7 +156,11 @@
             <div class="label-with-action">
               <label>Additional Custom Links</label>
               <button type="button" class="btn-add-custom-link" id="btnAddCustomLink">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
                 Add Link
               </button>
             </div>
@@ -188,17 +192,8 @@
           </div>
 
           <div class="form-group">
-            <label for="authCode">Auth Code</label>
-            <div class="input-with-action">
-              <input type="password" id="authCode" placeholder="Enter security / auth code">
-              <button type="button" class="btn-icon-input" id="btnToggleFormAuthVisibility" title="Show/Hide Auth Code">
-                <svg id="eyeFormIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-              </button>
-            </div>
+            <label for="notes">Notes</label>
+            <textarea id="notes" rows="3" placeholder="Enter notes or additional details..."></textarea>
           </div>
 
           <div class="modal-footer">
@@ -272,19 +267,19 @@
             </div>
 
             <div class="detail-card full-width">
-              <span class="detail-label">Auth Code</span>
-              <div class="detail-auth-container">
-                <div class="detail-auth-box">
-                  <span class="mono-text auth-code-text" id="detailAuthCode">-</span>
+              <span class="detail-label">Notes</span>
+              <div class="detail-notes-container">
+                <div class="detail-notes-box">
+                  <p class="detail-notes-text" id="detailNotes">No notes added</p>
                 </div>
-                <div class="auth-actions">
-                  <button class="btn btn-small btn-secondary" id="btnCopyAuthCode">
+                <div class="notes-actions">
+                  <button class="btn btn-small btn-secondary" id="btnCopyNotes">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
                       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
-                    <span>Copy Code</span>
+                    <span>Copy Notes</span>
                   </button>
                 </div>
               </div>
@@ -339,11 +334,21 @@
           <!-- Navigation Tabs -->
           <div class="modal-tabs">
             <button class="tab-btn active" id="tabBtnExport" data-tab="export">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
               Export Backup
             </button>
             <button class="tab-btn" id="tabBtnImport" data-tab="import">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
               Import Data
             </button>
           </div>
@@ -353,11 +358,17 @@
             <div class="backup-info-card">
               <div class="backup-info-header">
                 <div class="backup-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
+                  </svg>
                 </div>
                 <div>
                   <h4>Export Site Vault Backup</h4>
-                  <p class="text-muted text-sm">Download your entire site database as a JSON file to transfer between devices or save as a safe backup snapshot.</p>
+                  <p class="text-muted text-sm">Download your entire site database as a JSON file to transfer between
+                    devices or save as a safe backup snapshot.</p>
                 </div>
               </div>
 
@@ -379,11 +390,20 @@
 
             <div class="export-actions-group">
               <button class="btn btn-primary btn-lg" id="btnDownloadExport">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
                 Download Backup File (.json)
               </button>
               <button class="btn btn-secondary btn-lg" id="btnCopyExportJson">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
                 Copy JSON to Clipboard
               </button>
             </div>
@@ -397,20 +417,30 @@
               <div class="dropzone" id="importDropzone">
                 <input type="file" id="importFileInput" accept=".json,application/json" class="hidden-file-input">
                 <div class="dropzone-content">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
                   <p class="dropzone-title">Click to upload or drag & drop backup JSON file</p>
-                  <span class="dropzone-subtitle text-muted text-sm" id="importFileName">Supports .json files generated by Site Info Manager</span>
+                  <span class="dropzone-subtitle text-muted text-sm" id="importFileName">Supports .json files generated
+                    by Site Info Manager</span>
                 </div>
               </div>
             </div>
 
+            <!-- Visual Divider -->
+            <div class="divider-or"><span>OR</span></div>
+
             <!-- Paste Raw JSON Option -->
             <div class="form-group">
               <div class="label-with-action">
-                <label for="importTextarea">Or Paste Backup JSON Directly</label>
+                <label for="importTextarea">Paste Backup JSON Directly</label>
                 <button type="button" class="btn-link-text" id="btnClearImportText">Clear Text</button>
               </div>
-              <textarea id="importTextarea" rows="4" class="font-mono text-xs" placeholder='Paste JSON content here e.g. {"sites": [{ "siteName": "Portal", ... }]}'></textarea>
+              <textarea id="importTextarea" rows="4" class="font-mono text-xs"
+                placeholder='Paste JSON content here e.g. {"sites": [{ "siteName": "Portal", ... }]}'></textarea>
             </div>
 
             <!-- Import Mode Selection -->
@@ -420,26 +450,42 @@
                 <label class="mode-card active" id="modeCardMerge">
                   <input type="radio" name="importMode" value="merge" checked class="hidden-radio">
                   <div class="mode-card-header">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="16 16 12 12 8 16" />
+                      <line x1="12" y1="12" x2="12" y2="21" />
+                      <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+                    </svg>
                     <strong>Merge & Update (Safe)</strong>
                   </div>
-                  <p class="text-xs text-muted">Combines imported sites with current data. Updates existing sites by ID or name without deleting anything.</p>
+                  <p class="text-xs text-muted">Combines imported sites with current data. Updates existing sites by ID
+                    or name without deleting anything.</p>
                 </label>
 
                 <label class="mode-card" id="modeCardOverwrite">
                   <input type="radio" name="importMode" value="overwrite" class="hidden-radio">
                   <div class="mode-card-header text-danger">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
                     <strong>Overwrite All Data</strong>
                   </div>
-                  <p class="text-xs text-muted">Replaces all current sites with imported sites. Existing sites not in the backup will be deleted.</p>
+                  <p class="text-xs text-muted">Replaces all current sites with imported sites. Existing sites not in
+                    the backup will be deleted.</p>
                 </label>
               </div>
             </div>
 
             <!-- Import Error Banner -->
             <div id="importErrorAlert" class="alert alert-danger hidden">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
               <span id="importErrorMessage">Error message</span>
             </div>
           </div>
@@ -449,7 +495,10 @@
           <button type="button" class="btn btn-secondary" id="btnCancelExportImport">Close</button>
           <div class="footer-actions">
             <button type="button" class="btn btn-primary hidden" id="btnSubmitImport">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
               Import Data Now
             </button>
           </div>

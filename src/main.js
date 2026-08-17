@@ -27,8 +27,7 @@ const dashboard2IdInput = document.getElementById('dashboard2Id');
 const dashboard2EditUrlInput = document.getElementById('dashboard2EditUrl');
 const dashboard3IdInput = document.getElementById('dashboard3Id');
 const dashboard3EditUrlInput = document.getElementById('dashboard3EditUrl');
-const authCodeInput = document.getElementById('authCode');
-const btnToggleFormAuthVisibility = document.getElementById('btnToggleFormAuthVisibility');
+const notesInput = document.getElementById('notes');
 const btnCloseFormModal = document.getElementById('btnCloseFormModal');
 const btnCancelForm = document.getElementById('btnCancelForm');
 const siteNameError = document.getElementById('siteNameError');
@@ -50,10 +49,8 @@ const detailDash3Text = document.getElementById('detailDash3Text');
 const detailDash3EditContainer = document.getElementById('detailDash3EditContainer');
 const btnCopyDash2 = document.getElementById('btnCopyDash2');
 const btnCopyDash3 = document.getElementById('btnCopyDash3');
-const detailAuthCode = document.getElementById('detailAuthCode');
-const btnToggleAuthReveal = document.getElementById('btnToggleAuthReveal');
-const authRevealText = document.getElementById('authRevealText');
-const btnCopyAuthCode = document.getElementById('btnCopyAuthCode');
+const detailNotes = document.getElementById('detailNotes');
+const btnCopyNotes = document.getElementById('btnCopyNotes');
 const detailTimestamps = document.getElementById('detailTimestamps');
 const btnDetailEdit = document.getElementById('btnDetailEdit');
 const btnDetailDelete = document.getElementById('btnDetailDelete');
@@ -111,12 +108,17 @@ function loadAndRenderSites() {
     const nameMatch = site.siteName && site.siteName.toLowerCase().includes(query);
     const dash2Match = site.dashboard2Id && site.dashboard2Id.toLowerCase().includes(query);
     const dash3Match = site.dashboard3Id && site.dashboard3Id.toLowerCase().includes(query);
-    return nameMatch || dash2Match || dash3Match;
+    const notesMatch = site.notes && site.notes.toLowerCase().includes(query);
+    return nameMatch || dash2Match || dash3Match || notesMatch;
   });
+
+  // Mobile screens (< 640px) always use Grid View
+  const isMobile = window.innerWidth <= 640;
+  const effectiveViewMode = isMobile ? 'grid' : currentViewMode;
 
   UI.renderSites(
     filteredSites,
-    currentViewMode,
+    effectiveViewMode,
     handleOpenDetailModal,
     handleOpenEditModal,
     handleOpenDeleteModal
@@ -168,6 +170,10 @@ function setupEventListeners() {
     loadAndRenderSites();
   });
 
+  window.addEventListener('resize', () => {
+    loadAndRenderSites();
+  });
+
   // Add Site Button
   btnOpenAddModal.addEventListener('click', () => {
     openFormModal('add');
@@ -176,15 +182,6 @@ function setupEventListeners() {
   // Form Modal Events
   btnCloseFormModal.addEventListener('click', closeFormModal);
   btnCancelForm.addEventListener('click', closeFormModal);
-
-  // Toggle Auth Visibility in Form
-  btnToggleFormAuthVisibility.addEventListener('click', () => {
-    if (authCodeInput.type === 'password') {
-      authCodeInput.type = 'text';
-    } else {
-      authCodeInput.type = 'password';
-    }
-  });
 
   // Custom Links Event Listeners
   btnAddCustomLink?.addEventListener('click', () => addCustomLinkRow('', ''));
@@ -212,7 +209,7 @@ function setupEventListeners() {
       dashboard2EditUrl: dashboard2EditUrlInput.value,
       dashboard3Id: dashboard3IdInput.value,
       dashboard3EditUrl: dashboard3EditUrlInput.value,
-      authCode: authCodeInput.value,
+      notes: notesInput.value,
       customLinks: getCustomLinksFromForm()
     };
 
@@ -243,15 +240,15 @@ function setupEventListeners() {
 
 
 
-  btnCopyAuthCode.addEventListener('click', async () => {
+  btnCopyNotes.addEventListener('click', async () => {
     if (!selectedSiteId) return;
     const site = Storage.getSiteById(selectedSiteId);
-    if (site && site.authCode) {
-      const ok = await copyToClipboard(site.authCode);
-      if (ok) UI.showToast('Auth Code copied to clipboard!', 'info');
-      else UI.showToast('Failed to copy Auth Code', 'error');
+    if (site && site.notes) {
+      const ok = await copyToClipboard(site.notes);
+      if (ok) UI.showToast('Notes copied to clipboard!', 'info');
+      else UI.showToast('Failed to copy Notes', 'error');
     } else {
-      UI.showToast('No Auth Code to copy', 'error');
+      UI.showToast('No notes to copy', 'error');
     }
   });
 
@@ -408,7 +405,7 @@ function setupEventListeners() {
 function openFormModal(mode, siteId = null) {
   siteNameError.textContent = '';
   siteForm.reset();
-  authCodeInput.type = 'password';
+  notesInput.value = '';
   customLinksList.innerHTML = '';
 
   if (mode === 'edit' && siteId) {
@@ -424,7 +421,7 @@ function openFormModal(mode, siteId = null) {
     dashboard2EditUrlInput.value = site.dashboard2EditUrl || '';
     dashboard3IdInput.value = site.dashboard3Id || '';
     dashboard3EditUrlInput.value = site.dashboard3EditUrl || '';
-    authCodeInput.value = site.authCode || '';
+    notesInput.value = site.notes || '';
 
     if (Array.isArray(site.customLinks)) {
       site.customLinks.forEach(link => addCustomLinkRow(link.label, link.url));
@@ -532,8 +529,8 @@ function handleOpenDetailModal(siteId) {
     detailDash3EditContainer.innerHTML = '';
   }
 
-  // Auth Code
-  detailAuthCode.textContent = site.authCode || '(Not set)';
+  // Notes
+  detailNotes.textContent = site.notes || 'No notes added';
 
   // Timestamps
   detailTimestamps.innerHTML = `

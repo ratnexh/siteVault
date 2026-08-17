@@ -117,7 +117,7 @@ export const UI = {
         if (cardEl) {
           cardEl.addEventListener('click', (e) => {
             // Avoid triggering detail modal if user clicked directly on link chip or action button
-            if (e.target.closest('.link-chip') || e.target.closest('.link-url') || e.target.closest('.card-actions') || e.target.closest('.btn-copy-auth')) {
+            if (e.target.closest('.link-chip') || e.target.closest('.link-url') || e.target.closest('.card-actions') || e.target.closest('.btn-copy-notes')) {
               return;
             }
             onSelectSite(site.id);
@@ -139,12 +139,12 @@ export const UI = {
             });
           }
 
-          const btnCopyAuth = cardEl.querySelector('.btn-copy-auth');
-          if (btnCopyAuth) {
-            btnCopyAuth.addEventListener('click', (e) => {
+          const btnCopyNotes = cardEl.querySelector('.btn-copy-notes');
+          if (btnCopyNotes) {
+            btnCopyNotes.addEventListener('click', (e) => {
               e.stopPropagation();
-              const code = btnCopyAuth.getAttribute('data-auth');
-              copyToClipboard(code, 'Auth code copied to clipboard!');
+              const text = btnCopyNotes.getAttribute('data-notes');
+              copyToClipboard(text, 'Notes copied to clipboard!');
             });
           }
         }
@@ -152,7 +152,7 @@ export const UI = {
         const rowEl = document.getElementById(`row-${site.id}`);
         if (rowEl) {
           rowEl.addEventListener('click', (e) => {
-            if (e.target.closest('.link-chip') || e.target.closest('.link-url') || e.target.closest('.card-actions') || e.target.closest('.btn-copy-auth')) {
+            if (e.target.closest('.link-chip') || e.target.closest('.link-url') || e.target.closest('.card-actions') || e.target.closest('.btn-copy-notes')) {
               return;
             }
             onSelectSite(site.id);
@@ -174,12 +174,12 @@ export const UI = {
             });
           }
 
-          const btnCopyAuth = rowEl.querySelector('.btn-copy-auth');
-          if (btnCopyAuth) {
-            btnCopyAuth.addEventListener('click', (e) => {
+          const btnCopyNotes = rowEl.querySelector('.btn-copy-notes');
+          if (btnCopyNotes) {
+            btnCopyNotes.addEventListener('click', (e) => {
               e.stopPropagation();
-              const code = btnCopyAuth.getAttribute('data-auth');
-              copyToClipboard(code, 'Auth code copied to clipboard!');
+              const text = btnCopyNotes.getAttribute('data-notes');
+              copyToClipboard(text, 'Notes copied to clipboard!');
             });
           }
         }
@@ -276,17 +276,19 @@ export const UI = {
         ${dashSectionHTML}
 
         <div class="site-card-footer">
-          <div class="auth-code-pill" title="${site.authCode ? 'Auth Code' : 'No Auth Code'}">
+          <div class="notes-pill" title="${site.notes ? escapeHtml(site.notes) : 'No Notes'}">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
             </svg>
-            ${site.authCode ? `
-              <span class="mono-text auth-code-val">${escapeHtml(site.authCode)}</span>
-              <button type="button" class="btn-icon-only btn-copy-auth" title="Copy Auth Code" data-auth="${escapeHtml(site.authCode)}">
+            ${site.notes ? `
+              <span class="notes-val">${escapeHtml(site.notes)}</span>
+              <button type="button" class="btn-icon-only btn-copy-notes" title="Copy Notes" data-notes="${escapeHtml(site.notes)}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               </button>
-            ` : '<span class="text-muted">No Auth Code</span>'}
+            ` : '<span class="text-muted">No Notes</span>'}
           </div>
 
           <div class="card-actions">
@@ -366,11 +368,11 @@ export const UI = {
       const dash2Cell = this.formatTableDashCell(site.dashboard2Id, site.dashboard2EditUrl, '2.0');
       const dash3Cell = this.formatTableDashCell(site.dashboard3Id, site.dashboard3EditUrl, '3.0');
 
-      const authStatus = site.authCode
-        ? `<div class="auth-code-pill">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            <span class="mono-text auth-code-val">${escapeHtml(site.authCode)}</span>
-            <button type="button" class="btn-icon-only btn-copy-auth" title="Copy Auth Code" data-auth="${escapeHtml(site.authCode)}">
+      const notesStatus = site.notes
+        ? `<div class="notes-pill" title="${escapeHtml(site.notes)}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <span class="notes-val">${escapeHtml(site.notes)}</span>
+            <button type="button" class="btn-icon-only btn-copy-notes" title="Copy Notes" data-notes="${escapeHtml(site.notes)}">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             </button>
            </div>`
@@ -383,15 +385,15 @@ export const UI = {
           <td class="table-site-name">
             <div class="site-name-cell">
               <span class="site-avatar">${initialChar}</span>
-              <span class="font-semibold">${escapeHtml(site.siteName)}</span>
+              <span class="font-semibold site-name-title">${escapeHtml(site.siteName)}</span>
             </div>
           </td>
-          <td>
+          <td class="table-links-td">
             <div class="table-links-cell">${linksColumn}</div>
           </td>
-          <td>${dash2Cell}</td>
-          <td>${dash3Cell}</td>
-          <td>${authStatus}</td>
+          <td class="table-dash2-td">${dash2Cell}</td>
+          <td class="table-dash3-td">${dash3Cell}</td>
+          <td class="table-notes-td">${notesStatus}</td>
           <td class="table-actions-cell">
             <div class="card-actions">
               <button class="btn-icon-only btn-row-edit" title="Edit Site">
@@ -414,7 +416,7 @@ export const UI = {
             <th>Quick Links</th>
             <th>2.0 Dashboard</th>
             <th>3.0 Dashboard</th>
-            <th>Auth Code</th>
+            <th>Notes</th>
             <th style="width: 70px; text-align: right;">Actions</th>
           </tr>
         </thead>

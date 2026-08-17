@@ -1,39 +1,12 @@
 const STORAGE_KEY = 'site_info_manager_sites_v1';
 
 // Initial sample data if storage is completely empty
-const INITIAL_SAMPLES = [
-  {
-    id: 'site-sample-1',
-    siteName: 'Customer Portal 2.0',
-    docsLink: 'https://docs.google.com/document/d/sample-docs-1',
-    figmaLink: 'https://www.figma.com/file/sample-design-1',
-    dashboard2Id: 'https://dash2.example.com/portal/89410',
-    dashboard2EditUrl: 'https://dash2.example.com/portal/89410/edit',
-    dashboard3Id: 'https://dash3.example.com/portal/77209',
-    dashboard3EditUrl: 'https://dash3.example.com/portal/77209/edit',
-    authCode: 'CP2-SECRET-KEY-99',
-    createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000 * 1).toISOString()
-  },
-  {
-    id: 'site-sample-2',
-    siteName: 'E-Commerce Storefront',
-    docsLink: 'https://github.com/example/ecommerce-docs',
-    figmaLink: 'https://www.figma.com/file/sample-design-2',
-    dashboard2Id: 'EC-2022-V2',
-    dashboard2EditUrl: 'https://dash2.example.com/store/edit',
-    dashboard3Id: 'EC-2024-V3',
-    dashboard3EditUrl: '',
-    authCode: 'AUTH-STORE-8812',
-    createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000 * 2).toISOString()
-  }
-];
+const INITIAL_SAMPLES = [];
 
 export const Storage = {
   /**
    * Fetch all sites from LocalStorage.
-   * If empty, populates initial sample data.
+   * Filters out legacy sample data if present.
    */
   getAllSites() {
     try {
@@ -42,7 +15,15 @@ export const Storage = {
         this.saveAllSites(INITIAL_SAMPLES);
         return INITIAL_SAMPLES;
       }
-      return JSON.parse(raw);
+      const sites = JSON.parse(raw);
+      // Filter out legacy dummy sample items
+      const cleaned = Array.isArray(sites)
+        ? sites.filter(s => s && s.id && !String(s.id).startsWith('site-sample-'))
+        : [];
+      if (cleaned.length !== (Array.isArray(sites) ? sites.length : 0)) {
+        this.saveAllSites(cleaned);
+      }
+      return cleaned;
     } catch (e) {
       console.error('Error reading sites from LocalStorage:', e);
       return [];
@@ -83,7 +64,7 @@ export const Storage = {
       dashboard2EditUrl: siteData.dashboard2EditUrl ? siteData.dashboard2EditUrl.trim() : '',
       dashboard3Id: siteData.dashboard3Id ? siteData.dashboard3Id.trim() : '',
       dashboard3EditUrl: siteData.dashboard3EditUrl ? siteData.dashboard3EditUrl.trim() : '',
-      authCode: siteData.authCode ? siteData.authCode.trim() : '',
+      notes: siteData.notes ? siteData.notes.trim() : '',
       customLinks: Array.isArray(siteData.customLinks)
         ? siteData.customLinks.map(l => ({
             id: l.id || 'link-' + Math.random().toString(36).substring(2, 7),
@@ -118,7 +99,7 @@ export const Storage = {
       dashboard2EditUrl: siteData.dashboard2EditUrl ? siteData.dashboard2EditUrl.trim() : '',
       dashboard3Id: siteData.dashboard3Id ? siteData.dashboard3Id.trim() : '',
       dashboard3EditUrl: siteData.dashboard3EditUrl ? siteData.dashboard3EditUrl.trim() : '',
-      authCode: siteData.authCode ? siteData.authCode.trim() : '',
+      notes: siteData.notes ? siteData.notes.trim() : '',
       customLinks: Array.isArray(siteData.customLinks)
         ? siteData.customLinks.map(l => ({
             id: l.id || 'link-' + Math.random().toString(36).substring(2, 7),
@@ -178,7 +159,7 @@ export const Storage = {
       dashboard2EditUrl: (item.dashboard2EditUrl || '').trim(),
       dashboard3Id: (item.dashboard3Id || '').trim(),
       dashboard3EditUrl: (item.dashboard3EditUrl || '').trim(),
-      authCode: (item.authCode || '').trim(),
+      notes: (item.notes || item.authCode || '').trim(),
       customLinks: Array.isArray(item.customLinks)
         ? item.customLinks.map(l => ({
             id: l.id || 'link-' + Math.random().toString(36).substring(2, 7),
