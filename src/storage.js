@@ -72,6 +72,20 @@ export const Storage = {
             url: (l.url || '').trim()
           })).filter(l => l.url)
         : [],
+      customLinks2: Array.isArray(siteData.customLinks2)
+        ? siteData.customLinks2.map(l => ({
+            id: l.id || 'link2-' + Math.random().toString(36).substring(2, 7),
+            label: (l.label || '2.0 Link').trim(),
+            url: (l.url || '').trim()
+          })).filter(l => l.url)
+        : [],
+      customLinks3: Array.isArray(siteData.customLinks3)
+        ? siteData.customLinks3.map(l => ({
+            id: l.id || 'link3-' + Math.random().toString(36).substring(2, 7),
+            label: (l.label || '3.0 Link').trim(),
+            url: (l.url || '').trim()
+          })).filter(l => l.url)
+        : [],
       createdAt: now,
       updatedAt: now
     };
@@ -104,6 +118,20 @@ export const Storage = {
         ? siteData.customLinks.map(l => ({
             id: l.id || 'link-' + Math.random().toString(36).substring(2, 7),
             label: (l.label || 'Link').trim(),
+            url: (l.url || '').trim()
+          })).filter(l => l.url)
+        : [],
+      customLinks2: Array.isArray(siteData.customLinks2)
+        ? siteData.customLinks2.map(l => ({
+            id: l.id || 'link2-' + Math.random().toString(36).substring(2, 7),
+            label: (l.label || '2.0 Link').trim(),
+            url: (l.url || '').trim()
+          })).filter(l => l.url)
+        : [],
+      customLinks3: Array.isArray(siteData.customLinks3)
+        ? siteData.customLinks3.map(l => ({
+            id: l.id || 'link3-' + Math.random().toString(36).substring(2, 7),
+            label: (l.label || '3.0 Link').trim(),
             url: (l.url || '').trim()
           })).filter(l => l.url)
         : [],
@@ -164,6 +192,20 @@ export const Storage = {
         ? item.customLinks.map(l => ({
             id: l.id || 'link-' + Math.random().toString(36).substring(2, 7),
             label: (l.label || 'Link').trim(),
+            url: (l.url || '').trim()
+          })).filter(l => l.url)
+        : [],
+      customLinks2: Array.isArray(item.customLinks2)
+        ? item.customLinks2.map(l => ({
+            id: l.id || 'link2-' + Math.random().toString(36).substring(2, 7),
+            label: (l.label || '2.0 Link').trim(),
+            url: (l.url || '').trim()
+          })).filter(l => l.url)
+        : [],
+      customLinks3: Array.isArray(item.customLinks3)
+        ? item.customLinks3.map(l => ({
+            id: l.id || 'link3-' + Math.random().toString(36).substring(2, 7),
+            label: (l.label || '3.0 Link').trim(),
             url: (l.url || '').trim()
           })).filter(l => l.url)
         : [],

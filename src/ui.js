@@ -190,8 +190,11 @@ export const UI = {
   /**
    * Helper to format Dashboard ID / URL display row
    */
-  formatDashRow(idText, editUrl, label) {
-    if (!idText && !editUrl) return '';
+  /**
+   * Helper to format Dashboard ID / URL display row
+   */
+  formatDashRow(idText, editUrl, customLinks = [], label = '2.0') {
+    if (!idText && !editUrl && (!customLinks || customLinks.length === 0)) return '';
 
     const chipClass = label === '2.0' ? 'link-chip-dash2' : 'link-chip-dash3';
 
@@ -215,11 +218,20 @@ export const UI = {
       </a>`;
     }
 
+    const customChipsHtml = (customLinks || []).map(link => {
+      if (!link.url) return '';
+      return `<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-chip ${chipClass}" title="Open ${escapeHtml(link.label || (label + ' Link'))}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+        ${escapeHtml(link.label || (label + ' Link'))}
+      </a>`;
+    }).join('');
+
     return `
       <div class="dash-row">
         <span class="dash-row-label">${label}</span>
         ${idHtml}
         ${editHtml}
+        ${customChipsHtml}
       </div>
     `;
   },
@@ -250,8 +262,8 @@ export const UI = {
       </a>`;
     }).join('');
 
-    const dash2Row = this.formatDashRow(site.dashboard2Id, site.dashboard2EditUrl, '2.0');
-    const dash3Row = this.formatDashRow(site.dashboard3Id, site.dashboard3EditUrl, '3.0');
+    const dash2Row = this.formatDashRow(site.dashboard2Id, site.dashboard2EditUrl, site.customLinks2, '2.0');
+    const dash3Row = this.formatDashRow(site.dashboard3Id, site.dashboard3EditUrl, site.customLinks3, '3.0');
     const hasDashboards = dash2Row || dash3Row;
 
     const dashSectionHTML = hasDashboards
@@ -307,8 +319,8 @@ export const UI = {
   /**
    * Compact dashboard formatting for Table View cells
    */
-  formatTableDashCell(idText, editUrl, label) {
-    if (!idText && !editUrl) return '<span class="text-muted text-sm">-</span>';
+  formatTableDashCell(idText, editUrl, customLinks = [], label = '2.0') {
+    if (!idText && !editUrl && (!customLinks || customLinks.length === 0)) return '<span class="text-muted text-sm">-</span>';
 
     const chipClass = label === '2.0' ? 'link-chip-dash2' : 'link-chip-dash3';
 
@@ -332,7 +344,15 @@ export const UI = {
       </a>`;
     }
 
-    return `<div class="table-chips-inline">${idHtml}${editHtml}</div>`;
+    const customChipsHtml = (customLinks || []).map(link => {
+      if (!link.url) return '';
+      return `<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-chip ${chipClass}" title="Open ${escapeHtml(link.label || (label + ' Link'))}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+        ${escapeHtml(link.label || (label + ' Link'))}
+      </a>`;
+    }).join('');
+
+    return `<div class="table-chips-inline">${idHtml}${editHtml}${customChipsHtml}</div>`;
   },
 
   /**
@@ -365,8 +385,8 @@ export const UI = {
       const allLinks = [docsHTML, figmaHTML, customChipsHTML].filter(Boolean).join(' ');
       const linksColumn = allLinks || `<span class="text-muted text-sm">No links</span>`;
 
-      const dash2Cell = this.formatTableDashCell(site.dashboard2Id, site.dashboard2EditUrl, '2.0');
-      const dash3Cell = this.formatTableDashCell(site.dashboard3Id, site.dashboard3EditUrl, '3.0');
+      const dash2Cell = this.formatTableDashCell(site.dashboard2Id, site.dashboard2EditUrl, site.customLinks2, '2.0');
+      const dash3Cell = this.formatTableDashCell(site.dashboard3Id, site.dashboard3EditUrl, site.customLinks3, '3.0');
 
       const notesStatus = site.notes
         ? `<div class="notes-pill" title="${escapeHtml(site.notes)}">

@@ -33,6 +33,10 @@ const btnCancelForm = document.getElementById('btnCancelForm');
 const siteNameError = document.getElementById('siteNameError');
 const btnAddCustomLink = document.getElementById('btnAddCustomLink');
 const customLinksList = document.getElementById('customLinksList');
+const btnAddCustomLink2 = document.getElementById('btnAddCustomLink2');
+const customLinks2List = document.getElementById('customLinks2List');
+const btnAddCustomLink3 = document.getElementById('btnAddCustomLink3');
+const customLinks3List = document.getElementById('customLinks3List');
 
 // Detail Modal Elements
 const detailModal = document.getElementById('detailModal');
@@ -45,8 +49,10 @@ const detailCustomLinksCard = document.getElementById('detailCustomLinksCard');
 const detailCustomLinks = document.getElementById('detailCustomLinks');
 const detailDash2Text = document.getElementById('detailDash2Text');
 const detailDash2EditContainer = document.getElementById('detailDash2EditContainer');
+const detailDash2CustomLinksContainer = document.getElementById('detailDash2CustomLinksContainer');
 const detailDash3Text = document.getElementById('detailDash3Text');
 const detailDash3EditContainer = document.getElementById('detailDash3EditContainer');
+const detailDash3CustomLinksContainer = document.getElementById('detailDash3CustomLinksContainer');
 const btnCopyDash2 = document.getElementById('btnCopyDash2');
 const btnCopyDash3 = document.getElementById('btnCopyDash3');
 const detailNotes = document.getElementById('detailNotes');
@@ -109,7 +115,10 @@ function loadAndRenderSites() {
     const dash2Match = site.dashboard2Id && site.dashboard2Id.toLowerCase().includes(query);
     const dash3Match = site.dashboard3Id && site.dashboard3Id.toLowerCase().includes(query);
     const notesMatch = site.notes && site.notes.toLowerCase().includes(query);
-    return nameMatch || dash2Match || dash3Match || notesMatch;
+    const customLinksMatch = Array.isArray(site.customLinks) && site.customLinks.some(l => (l.label && l.label.toLowerCase().includes(query)) || (l.url && l.url.toLowerCase().includes(query)));
+    const customLinks2Match = Array.isArray(site.customLinks2) && site.customLinks2.some(l => (l.label && l.label.toLowerCase().includes(query)) || (l.url && l.url.toLowerCase().includes(query)));
+    const customLinks3Match = Array.isArray(site.customLinks3) && site.customLinks3.some(l => (l.label && l.label.toLowerCase().includes(query)) || (l.url && l.url.toLowerCase().includes(query)));
+    return nameMatch || dash2Match || dash3Match || notesMatch || customLinksMatch || customLinks2Match || customLinks3Match;
   });
 
   // Mobile screens (< 640px) always use Grid View
@@ -184,7 +193,9 @@ function setupEventListeners() {
   btnCancelForm.addEventListener('click', closeFormModal);
 
   // Custom Links Event Listeners
-  btnAddCustomLink?.addEventListener('click', () => addCustomLinkRow('', ''));
+  btnAddCustomLink?.addEventListener('click', () => addCustomLinkRow(customLinksList, '', '', 'Title (e.g. Staging)'));
+  btnAddCustomLink2?.addEventListener('click', () => addCustomLinkRow(customLinks2List, '', '', 'Title (e.g. 2.0 Staging)'));
+  btnAddCustomLink3?.addEventListener('click', () => addCustomLinkRow(customLinks3List, '', '', 'Title (e.g. 3.0 Staging)'));
 
   // Form Submit
   siteForm.addEventListener('submit', (e) => {
@@ -210,7 +221,9 @@ function setupEventListeners() {
       dashboard3Id: dashboard3IdInput.value,
       dashboard3EditUrl: dashboard3EditUrlInput.value,
       notes: notesInput.value,
-      customLinks: getCustomLinksFromForm()
+      customLinks: getCustomLinksFromForm(customLinksList, 'Link'),
+      customLinks2: getCustomLinksFromForm(customLinks2List, '2.0 Link'),
+      customLinks3: getCustomLinksFromForm(customLinks3List, '3.0 Link')
     };
 
     if (id) {
@@ -406,7 +419,9 @@ function openFormModal(mode, siteId = null) {
   siteNameError.textContent = '';
   siteForm.reset();
   notesInput.value = '';
-  customLinksList.innerHTML = '';
+  if (customLinksList) customLinksList.innerHTML = '';
+  if (customLinks2List) customLinks2List.innerHTML = '';
+  if (customLinks3List) customLinks3List.innerHTML = '';
 
   if (mode === 'edit' && siteId) {
     const site = Storage.getSiteById(siteId);
@@ -424,7 +439,13 @@ function openFormModal(mode, siteId = null) {
     notesInput.value = site.notes || '';
 
     if (Array.isArray(site.customLinks)) {
-      site.customLinks.forEach(link => addCustomLinkRow(link.label, link.url));
+      site.customLinks.forEach(link => addCustomLinkRow(customLinksList, link.label, link.url, 'Title (e.g. Staging)'));
+    }
+    if (Array.isArray(site.customLinks2)) {
+      site.customLinks2.forEach(link => addCustomLinkRow(customLinks2List, link.label, link.url, 'Title (e.g. 2.0 Staging)'));
+    }
+    if (Array.isArray(site.customLinks3)) {
+      site.customLinks3.forEach(link => addCustomLinkRow(customLinks3List, link.label, link.url, 'Title (e.g. 3.0 Staging)'));
     }
   } else {
     formModalTitle.textContent = 'Add New Site';
@@ -506,6 +527,19 @@ function handleOpenDetailModal(siteId) {
     detailDash2EditContainer.innerHTML = '';
   }
 
+  if (detailDash2CustomLinksContainer) {
+    if (Array.isArray(site.customLinks2) && site.customLinks2.length > 0) {
+      detailDash2CustomLinksContainer.innerHTML = site.customLinks2.map(link => `
+        <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-chip link-chip-dash2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+          ${escapeHtml(link.label || '2.0 Link')} ↗
+        </a>
+      `).join('');
+    } else {
+      detailDash2CustomLinksContainer.innerHTML = '';
+    }
+  }
+
   if (site.dashboard3Id) {
     if (isUrl(site.dashboard3Id)) {
       detailDash3Text.innerHTML = `<a href="${escapeHtml(site.dashboard3Id)}" target="_blank" rel="noopener noreferrer" class="link-chip link-chip-dash3">
@@ -527,6 +561,19 @@ function handleOpenDetailModal(siteId) {
     </a>`;
   } else {
     detailDash3EditContainer.innerHTML = '';
+  }
+
+  if (detailDash3CustomLinksContainer) {
+    if (Array.isArray(site.customLinks3) && site.customLinks3.length > 0) {
+      detailDash3CustomLinksContainer.innerHTML = site.customLinks3.map(link => `
+        <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-chip link-chip-dash3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+          ${escapeHtml(link.label || '3.0 Link')} ↗
+        </a>
+      `).join('');
+    } else {
+      detailDash3CustomLinksContainer.innerHTML = '';
+    }
   }
 
   // Notes
@@ -573,12 +620,12 @@ function closeDeleteModal() {
 /**
  * Add a dynamic custom link row in the form
  */
-function addCustomLinkRow(label = '', url = '') {
-  if (!customLinksList) return;
+function addCustomLinkRow(containerEl = customLinksList, label = '', url = '', placeholderTitle = 'Title (e.g. Staging)') {
+  if (!containerEl) return;
   const row = document.createElement('div');
   row.className = 'custom-link-row';
   row.innerHTML = `
-    <input type="text" class="custom-link-label" placeholder="Title (e.g. Staging)" value="${escapeHtml(label)}">
+    <input type="text" class="custom-link-label" placeholder="${escapeHtml(placeholderTitle)}" value="${escapeHtml(label)}">
     <input type="url" class="custom-link-url" placeholder="https://..." value="${escapeHtml(url)}">
     <button type="button" class="btn-icon-only btn-remove-custom-link text-danger" title="Remove Link">&times;</button>
   `;
@@ -587,7 +634,7 @@ function addCustomLinkRow(label = '', url = '') {
     row.remove();
   });
 
-  customLinksList.appendChild(row);
+  containerEl.appendChild(row);
   if (!label && !url) {
     const labelInput = row.querySelector('.custom-link-label');
     if (labelInput) labelInput.focus();
@@ -597,9 +644,9 @@ function addCustomLinkRow(label = '', url = '') {
 /**
  * Read custom link values from form
  */
-function getCustomLinksFromForm() {
-  if (!customLinksList) return [];
-  const rows = customLinksList.querySelectorAll('.custom-link-row');
+function getCustomLinksFromForm(containerEl = customLinksList, defaultLabel = 'Link') {
+  if (!containerEl) return [];
+  const rows = containerEl.querySelectorAll('.custom-link-row');
   const links = [];
   rows.forEach(row => {
     const labelInput = row.querySelector('.custom-link-label');
@@ -607,7 +654,7 @@ function getCustomLinksFromForm() {
     const label = labelInput ? labelInput.value.trim() : '';
     const url = urlInput ? urlInput.value.trim() : '';
     if (url) {
-      links.push({ label: label || 'Link', url });
+      links.push({ label: label || defaultLabel, url });
     }
   });
   return links;
