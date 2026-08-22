@@ -81,16 +81,100 @@ export function downloadFile(filename, content, mimeType = 'application/json') {
   }
 }
 
+const SITE_THEMES = [
+  { border: '#6366f1', bg: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)' }, // Purple
+  { border: '#3b82f6', bg: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)' }, // Blue
+  { border: '#8b5cf6', bg: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)' }, // Violet
+  { border: '#06b6d4', bg: 'linear-gradient(135deg, #22d3ee 0%, #0891b2 100%)' }, // Cyan
+];
+
+export function getSiteTheme(siteName = '') {
+  let hash = 0;
+  for (let i = 0; i < siteName.length; i++) {
+    hash = siteName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % SITE_THEMES.length;
+  return SITE_THEMES[index];
+}
+
 export const UI = {
+  /**
+   * Render Sidebar Sites Navigation Listing
+   */
+  renderSidebar(sites, activeSiteId = null, filterQuery = '', onNavigateToSite) {
+    const listContainer = document.getElementById('sidebarSitesList');
+    if (!listContainer) return;
+
+    let filtered = sites;
+    if (filterQuery) {
+      const q = filterQuery.toLowerCase().trim();
+      filtered = sites.filter(s => (s.siteName || '').toLowerCase().includes(q));
+    }
+
+    if (filtered.length === 0) {
+      listContainer.innerHTML = `<div class="sidebar-empty">No matching sites</div>`;
+      return;
+    }
+
+    listContainer.innerHTML = filtered.map(site => {
+      const initial = (site.siteName || 'S').charAt(0).toUpperCase();
+      const isActive = site.id === activeSiteId;
+      const theme = getSiteTheme(site.siteName);
+      return `
+        <div class="sidebar-site-item ${isActive ? 'active' : ''}" data-site-id="${site.id}" title="${escapeHtml(site.siteName)}">
+          <span class="sidebar-site-avatar" style="background: ${theme.bg};">${initial}</span>
+          <span class="sidebar-site-name">${escapeHtml(site.siteName)}</span>
+          <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
+      `;
+    }).join('');
+
+    // Attach click listeners to sidebar items
+    filtered.forEach(site => {
+      const itemEl = listContainer.querySelector(`[data-site-id="${site.id}"]`);
+      if (itemEl) {
+        itemEl.addEventListener('click', () => {
+          if (onNavigateToSite) {
+            onNavigateToSite(site.id);
+          }
+        });
+      }
+    });
+  },
+
+  /**
+   * Scroll smoothly to site card/row and trigger flash highlight animation
+   */
+  scrollToAndHighlightSite(siteId, viewMode = 'grid') {
+    const targetId = viewMode === 'grid' ? `card-${siteId}` : `row-${siteId}`;
+    const element = document.getElementById(targetId);
+    if (!element) return;
+
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    element.classList.remove('highlight-flash');
+    void element.offsetWidth;
+    element.classList.add('highlight-flash');
+
+    setTimeout(() => {
+      element.classList.remove('highlight-flash');
+    }, 1600);
+  },
+
   /**
    * Render Sites List in Grid or Table mode.
    */
   renderSites(sites, viewMode = 'grid', onSelectSite, onEditSite, onDeleteSite) {
     const container = document.getElementById('sitesContainer');
     const emptyState = document.getElementById('emptyState');
-    const countBadge = document.getElementById('siteCountBadge');
-
-    countBadge.textContent = `${sites.length} ${sites.length === 1 ? 'site' : 'sites'}`;
+    const countTextEl = document.getElementById('siteCountText');
+    if (countTextEl) {
+      countTextEl.textContent = `${sites.length} ${sites.length === 1 ? 'site' : 'sites'}`;
+    } else if (countBadge) {
+      countBadge.textContent = `${sites.length} ${sites.length === 1 ? 'site' : 'sites'}`;
+    }
 
     if (sites.length === 0) {
       container.innerHTML = '';
@@ -117,7 +201,7 @@ export const UI = {
         if (cardEl) {
           cardEl.addEventListener('click', (e) => {
             // Avoid triggering detail modal if user clicked directly on link chip or action button
-            if (e.target.closest('.link-chip') || e.target.closest('.link-url') || e.target.closest('.card-actions') || e.target.closest('.btn-copy-notes')) {
+            if (e.target.closest('.link-chip') || e.target.closest('.link-url') || e.target.closest('.card-actions') || e.target.closest('.card-quick-actions') || e.target.closest('.btn-copy-notes') || e.target.closest('.btn-copy-notes-icon')) {
               return;
             }
             onSelectSite(site.id);
@@ -139,7 +223,7 @@ export const UI = {
             });
           }
 
-          const btnCopyNotes = cardEl.querySelector('.btn-copy-notes');
+          const btnCopyNotes = cardEl.querySelector('.btn-copy-notes-icon') || cardEl.querySelector('.btn-copy-notes');
           if (btnCopyNotes) {
             btnCopyNotes.addEventListener('click', (e) => {
               e.stopPropagation();
@@ -240,43 +324,137 @@ export const UI = {
    * HTML string for single site card in Grid View
    */
   createCardHTML(site) {
+    const settings = Storage.getSettings ? Storage.getSettings() : { openNewTab: true };
+    const targetAttr = settings.openNewTab !== false ? 'target="_blank" rel="noopener noreferrer"' : 'target="_self"';
+
     const docsHTML = site.docsLink
-      ? `<a href="${escapeHtml(site.docsLink)}" target="_blank" rel="noopener noreferrer" class="link-chip link-chip-docs" title="Open Docs">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      ? `<a href="${escapeHtml(site.docsLink)}" ${targetAttr} class="link-chip link-chip-docs" title="Open Docs Link">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           Docs
          </a>`
-      : `<span class="link-chip link-chip-disabled">No Docs</span>`;
+      : `<span class="link-chip link-chip-disabled" title="No Docs Provided">No Docs</span>`;
 
     const figmaHTML = site.figmaLink
-      ? `<a href="${escapeHtml(site.figmaLink)}" target="_blank" rel="noopener noreferrer" class="link-chip link-chip-figma" title="Open Figma">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z"></path><path d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z"></path><path d="M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z"></path><path d="M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z"></path><path d="M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z"></path></svg>
+      ? `<a href="${escapeHtml(site.figmaLink)}" ${targetAttr} class="link-chip link-chip-figma" title="Open Figma Spec">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 38 57" fill="currentColor"><path d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0z"/><path d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z"/><path d="M0 28.5A9.5 9.5 0 0 1 9.5 19H19v19H9.5A9.5 9.5 0 0 1 0 28.5z"/><path d="M0 9.5A9.5 9.5 0 0 1 9.5 0H19v19H9.5A9.5 9.5 0 0 1 0 9.5z"/><path d="M19 0h9.5a9.5 9.5 0 1 1 0 19H19V0z"/></svg>
           Figma
          </a>`
-      : `<span class="link-chip link-chip-disabled">No Figma</span>`;
+      : `<span class="link-chip link-chip-disabled" title="No Figma Spec Provided">No Figma</span>`;
 
     const customChipsHTML = (site.customLinks || []).map(link => {
       if (!link.url) return '';
-      return `<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-chip link-chip-custom" title="Open ${escapeHtml(link.label || 'Link')}">
+      return `<a href="${escapeHtml(link.url)}" ${targetAttr} class="link-chip link-chip-custom" title="Open ${escapeHtml(link.label || 'Link')}">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
         ${escapeHtml(link.label || 'Link')}
       </a>`;
     }).join('');
 
-    const dash2Row = this.formatDashRow(site.dashboard2Id, site.dashboard2EditUrl, site.customLinks2, '2.0');
-    const dash3Row = this.formatDashRow(site.dashboard3Id, site.dashboard3EditUrl, site.customLinks3, '3.0');
-    const hasDashboards = dash2Row || dash3Row;
+    // Dashboard 2.0 / 3.0 2-Column Grid Layout matching screenshot
+    const hasDash2 = site.dashboard2Id || site.dashboard2EditUrl || (site.customLinks2 && site.customLinks2.length > 0);
+    const hasDash3 = site.dashboard3Id || site.dashboard3EditUrl || (site.customLinks3 && site.customLinks3.length > 0);
 
-    const dashSectionHTML = hasDashboards
-      ? `<div class="dashboards-container">
-          ${dash2Row}
-          ${dash3Row}
+    let dash2ColumnHTML = '';
+    if (hasDash2) {
+      const dash2Items = [];
+      if (site.dashboard2Id) {
+        if (isUrl(site.dashboard2Id)) {
+          dash2Items.push(`<a href="${escapeHtml(site.dashboard2Id)}" ${targetAttr} class="link-chip link-chip-dash2" title="Open 2.0 Dashboard URL">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            2.0 Dashboard URL
+          </a>`);
+        } else {
+          dash2Items.push(`<span class="mono-text dash-id-badge" title="2.0 Dashboard ID">${escapeHtml(site.dashboard2Id)}</span>`);
+        }
+      }
+      if (site.dashboard2EditUrl) {
+        dash2Items.push(`<a href="${escapeHtml(site.dashboard2EditUrl)}" ${targetAttr} class="link-chip link-chip-edit" title="Edit 2.0 Dashboard URL">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          2.0 Edit URL
+        </a>`);
+      }
+      (site.customLinks2 || []).forEach(link => {
+        if (link.url) {
+          dash2Items.push(`<a href="${escapeHtml(link.url)}" ${targetAttr} class="link-chip link-chip-dash2" title="Open ${escapeHtml(link.label || '2.0 Link')}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            ${escapeHtml(link.label || '2.0 Link')}
+          </a>`);
+        }
+      });
+
+      dash2ColumnHTML = `
+        <div class="dash-column">
+          <span class="dash-column-badge">2.0</span>
+          <div class="dash-column-items">
+            ${dash2Items.join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    let dash3ColumnHTML = '';
+    if (hasDash3) {
+      const dash3Items = [];
+      if (site.dashboard3Id) {
+        if (isUrl(site.dashboard3Id)) {
+          dash3Items.push(`<a href="${escapeHtml(site.dashboard3Id)}" ${targetAttr} class="link-chip link-chip-dash3" title="Open 3.0 Dashboard URL">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            3.0 Dashboard URL
+          </a>`);
+        } else {
+          dash3Items.push(`<span class="mono-text dash-id-badge" title="3.0 Dashboard ID">${escapeHtml(site.dashboard3Id)}</span>`);
+        }
+      }
+      if (site.dashboard3EditUrl) {
+        dash3Items.push(`<a href="${escapeHtml(site.dashboard3EditUrl)}" ${targetAttr} class="link-chip link-chip-edit" title="Edit 3.0 Dashboard URL">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          3.0 Edit URL
+        </a>`);
+      }
+      (site.customLinks3 || []).forEach(link => {
+        if (link.url) {
+          dash3Items.push(`<a href="${escapeHtml(link.url)}" ${targetAttr} class="link-chip link-chip-dash3" title="Open ${escapeHtml(link.label || '3.0 Link')}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            ${escapeHtml(link.label || '3.0 Link')}
+          </a>`);
+        }
+      });
+
+      dash3ColumnHTML = `
+        <div class="dash-column">
+          <span class="dash-column-badge">3.0</span>
+          <div class="dash-column-items">
+            ${dash3Items.join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    const isDual = hasDash2 && hasDash3;
+    const dashboardSectionHTML = (hasDash2 || hasDash3)
+      ? `<div class="dashboards-box-container ${isDual ? 'dual-column' : 'single-column'}">
+          ${dash2ColumnHTML}
+          ${dash3ColumnHTML}
          </div>`
       : '';
 
+    // Notes & Auth Box Container matching user's mockup
+    const hasNotes = Boolean(site.notes && site.notes.trim());
+    const notesContentHTML = hasNotes
+      ? `<div class="notes-content-box">
+          <div class="notes-text">${escapeHtml(site.notes)}</div>
+         </div>`
+      : `<div class="notes-empty-text">No notes</div>`;
+
+    const initial = (site.siteName || 'S').charAt(0).toUpperCase();
+    const theme = getSiteTheme(site.siteName);
+
     return `
-      <div class="site-card" id="card-${site.id}">
+      <div class="site-card glass-card" id="card-${site.id}" data-site-id="${site.id}" style="border-left-color: ${theme.border};">
         <div class="site-card-header">
-          <h3 class="site-title">${escapeHtml(site.siteName)}</h3>
+          <div class="site-card-title-group">
+            <span class="card-avatar-badge" style="background: ${theme.bg};">${initial}</span>
+            <h3 class="site-title">${escapeHtml(site.siteName)}</h3>
+          </div>
         </div>
 
         <div class="site-links">
@@ -285,32 +463,10 @@ export const UI = {
           ${customChipsHTML}
         </div>
 
-        ${dashSectionHTML}
+        ${dashboardSectionHTML}
 
-        <div class="site-card-footer">
-          <div class="notes-pill" title="${site.notes ? escapeHtml(site.notes) : 'No Notes'}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-            </svg>
-            ${site.notes ? `
-              <span class="notes-val">${escapeHtml(site.notes)}</span>
-              <button type="button" class="btn-icon-only btn-copy-notes" title="Copy Notes" data-notes="${escapeHtml(site.notes)}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              </button>
-            ` : '<span class="text-muted">No Notes</span>'}
-          </div>
-
-          <div class="card-actions">
-            <button class="btn-icon-only btn-card-edit" title="Edit Site">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            </button>
-            <button class="btn-icon-only btn-card-delete text-danger" title="Delete Site">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            </button>
-          </div>
+        <div class="notes-box-container">
+          ${notesContentHTML}
         </div>
       </div>
     `;
@@ -322,12 +478,14 @@ export const UI = {
   formatTableDashCell(idText, editUrl, customLinks = [], label = '2.0') {
     if (!idText && !editUrl && (!customLinks || customLinks.length === 0)) return '<span class="text-muted text-sm">-</span>';
 
+    const settings = Storage.getSettings ? Storage.getSettings() : { openNewTab: true };
+    const targetAttr = settings.openNewTab !== false ? 'target="_blank" rel="noopener noreferrer"' : 'target="_self"';
     const chipClass = label === '2.0' ? 'link-chip-dash2' : 'link-chip-dash3';
 
     let idHtml = '';
     if (idText) {
       if (isUrl(idText)) {
-        idHtml = `<a href="${escapeHtml(idText)}" target="_blank" rel="noopener noreferrer" class="link-chip ${chipClass}" title="Open ${label} Dashboard URL">
+        idHtml = `<a href="${escapeHtml(idText)}" ${targetAttr} class="link-chip ${chipClass}" title="Open ${label} Dashboard URL">
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
           Dashboard
         </a>`;
@@ -338,7 +496,7 @@ export const UI = {
 
     let editHtml = '';
     if (editUrl) {
-      editHtml = `<a href="${escapeHtml(editUrl)}" target="_blank" rel="noopener noreferrer" class="link-chip link-chip-edit" title="Edit ${label} Dashboard URL">
+      editHtml = `<a href="${escapeHtml(editUrl)}" ${targetAttr} class="link-chip link-chip-edit" title="Edit ${label} Dashboard URL">
         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Edit
       </a>`;
@@ -346,7 +504,7 @@ export const UI = {
 
     const customChipsHtml = (customLinks || []).map(link => {
       if (!link.url) return '';
-      return `<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-chip ${chipClass}" title="Open ${escapeHtml(link.label || (label + ' Link'))}">
+      return `<a href="${escapeHtml(link.url)}" ${targetAttr} class="link-chip ${chipClass}" title="Open ${escapeHtml(link.label || (label + ' Link'))}">
         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
         ${escapeHtml(link.label || (label + ' Link'))}
       </a>`;
@@ -359,16 +517,19 @@ export const UI = {
    * HTML string for Table View
    */
   createTableHTML(sites) {
+    const settings = Storage.getSettings ? Storage.getSettings() : { openNewTab: true };
+    const targetAttr = settings.openNewTab !== false ? 'target="_blank" rel="noopener noreferrer"' : 'target="_self"';
+
     const rows = sites.map(site => {
       const docsHTML = site.docsLink
-        ? `<a href="${escapeHtml(site.docsLink)}" target="_blank" rel="noopener noreferrer" class="link-chip link-chip-docs" title="Open Docs">
+        ? `<a href="${escapeHtml(site.docsLink)}" ${targetAttr} class="link-chip link-chip-docs" title="Open Docs">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
             Docs
            </a>`
         : '';
 
       const figmaHTML = site.figmaLink
-        ? `<a href="${escapeHtml(site.figmaLink)}" target="_blank" rel="noopener noreferrer" class="link-chip link-chip-figma" title="Open Figma">
+        ? `<a href="${escapeHtml(site.figmaLink)}" ${targetAttr} class="link-chip link-chip-figma" title="Open Figma">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z"></path><path d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z"></path><path d="M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z"></path><path d="M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z"></path><path d="M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z"></path></svg>
             Figma
            </a>`
@@ -376,7 +537,7 @@ export const UI = {
 
       const customChipsHTML = (site.customLinks || []).map(link => {
         if (!link.url) return '';
-        return `<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-chip link-chip-custom" title="Open ${escapeHtml(link.label || 'Link')}">
+        return `<a href="${escapeHtml(link.url)}" ${targetAttr} class="link-chip link-chip-custom" title="Open ${escapeHtml(link.label || 'Link')}">
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
           ${escapeHtml(link.label || 'Link')}
         </a>`;

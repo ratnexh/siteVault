@@ -92,6 +92,7 @@ export const Storage = {
 
     sites.unshift(newSite);
     this.saveAllSites(sites);
+    this.markUnbackedUpChanges();
     return newSite;
   },
 
@@ -140,6 +141,7 @@ export const Storage = {
 
     sites[index] = updatedSite;
     this.saveAllSites(sites);
+    this.markUnbackedUpChanges();
     return updatedSite;
   },
 
@@ -150,8 +152,12 @@ export const Storage = {
     let sites = this.getAllSites();
     const initialLength = sites.length;
     sites = sites.filter(s => s.id !== id);
-    this.saveAllSites(sites);
-    return sites.length < initialLength;
+    if (sites.length < initialLength) {
+      this.saveAllSites(sites);
+      this.markUnbackedUpChanges();
+      return true;
+    }
+    return false;
   },
 
   /**
@@ -249,6 +255,7 @@ export const Storage = {
 
     if (mode === 'overwrite') {
       this.saveAllSites(sanitizedSites);
+      this.markUnbackedUpChanges();
       return {
         mode: 'overwrite',
         total: sanitizedSites.length,
@@ -282,6 +289,7 @@ export const Storage = {
       });
 
       this.saveAllSites(existingSites);
+      this.markUnbackedUpChanges();
       return {
         mode: 'merge',
         total: existingSites.length,
@@ -289,5 +297,125 @@ export const Storage = {
         updated: updatedCount
       };
     }
+  },
+
+  /**
+   * Backup Tracker State Helpers
+   */
+  markUnbackedUpChanges() {
+    localStorage.setItem('site_vault_has_unbacked_up_changes', 'true');
+  },
+
+  getLastBackupTime() {
+    const ts = localStorage.getItem('site_vault_last_backup_time');
+    return ts ? parseInt(ts, 10) : null;
+  },
+
+  recordBackupTaken() {
+    localStorage.setItem('site_vault_last_backup_time', String(Date.now()));
+    localStorage.setItem('site_vault_has_unbacked_up_changes', 'false');
+    localStorage.removeItem('site_vault_snooze_backup_until');
+  },
+
+  snoozeBackupReminder(durationStr = '3d') {
+    let ms = 3 * 24 * 60 * 60 * 1000; // default 3 days
+    if (durationStr === '1h') ms = 1 * 60 * 60 * 1000;
+    else if (durationStr === '1d') ms = 1 * 24 * 60 * 60 * 1000;
+    else if (durationStr === '3d') ms = 3 * 24 * 60 * 60 * 1000;
+    else if (durationStr === '7d') ms = 7 * 24 * 60 * 60 * 1000;
+    else if (durationStr === '30d') ms = 30 * 24 * 60 * 60 * 1000;
+
+    const snoozeUntil = Date.now() + ms;
+    localStorage.setItem('site_vault_snooze_backup_until', String(snoozeUntil));
+  },
+
+  shouldShowBackupReminder() {
+    const settings = this.getSettings();
+    if (!settings.enableBackupReminder) return false;
+
+    const sites = this.getAllSites();
+    if (sites.length === 0) return false;
+
+    const snoozeUntil = localStorage.getItem('site_vault_snooze_backup_until');
+    if (snoozeUntil && Date.now() < parseInt(snoozeUntil, 10)) {
+      return false;
+    }
+
+    const hasUnbackedUp = localStorage.getItem('site_vault_has_unbacked_up_changes');
+    if (hasUnbackedUp === null) {
+      // First run: if sites exist, prompt for backup if no backup timestamp exists
+      return !this.getLastBackupTime();
+    }
+
+    return hasUnbackedUp === 'true';
+  },
+
+  /**
+   * Application Settings Helpers
+   */
+  getSettings() {
+    try {
+      const raw = localStorage.getItem('site_vault_settings_v1');
+      const defaults = {
+        enableBackupReminder: true,
+        defaultViewMode: 'grid',
+        defaultSortMode: 'recent',
+        openNewTab: true,
+        persistenceRequested: false
+      };
+      if (!raw) return defaults;
+      return { ...defaults, ...JSON.parse(raw) };
+    } catch (e) {
+      return {
+        enableBackupReminder: true,
+        defaultViewMode: 'grid',
+        defaultSortMode: 'recent',
+        openNewTab: true,
+        persistenceRequested: false
+      };
+    }
+  },
+
+  saveSettings(newSettings) {
+    try {
+      const current = this.getSettings();
+      const updated = { ...current, ...newSettings };
+      localStorage.setItem('site_vault_settings_v1', JSON.stringify(updated));
+      return updated;
+    } catch (e) {
+      console.error('Error saving settings:', e);
+      return null;
+    }
+  },
+
+  /**
+   * Browser Persistent Storage Exception API Helpers
+   */
+  async checkStoragePersistence() {
+    if (navigator.storage && navigator.storage.persisted) {
+      return await navigator.storage.persisted();
+    }
+    return false;
+  },
+
+  async requestStoragePersistence() {
+    if (navigator.storage && navigator.storage.persist) {
+      const isPersisted = await navigator.storage.persist();
+      if (isPersisted) {
+        this.saveSettings({ persistenceRequested: true });
+      }
+      return isPersisted;
+    }
+    return false;
+  },
+
+  async getStorageEstimate() {
+    if (navigator.storage && navigator.storage.estimate) {
+      const estimate = await navigator.storage.estimate();
+      const usageKB = (estimate.usage / 1024).toFixed(1);
+      const quotaMB = (estimate.quota / (1024 * 1024)).toFixed(0);
+      return { usageKB, quotaMB, raw: estimate };
+    }
+    return null;
   }
 };
