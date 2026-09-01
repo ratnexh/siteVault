@@ -5,6 +5,7 @@ export type SiteColor = 'indigo' | 'blue' | 'purple' | 'emerald' | 'rose' | 'amb
 export interface SiteEndpoints {
   dashboardUrl: string;
   editUrl: string;
+  liveUrl?: string;
 }
 
 export interface SiteCredentials {

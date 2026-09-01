@@ -14,7 +14,8 @@ import {
   Eye, 
   EyeOff, 
   Monitor, 
-  Edit3 
+  Edit3,
+  Globe
 } from 'lucide-react';
 
 interface SiteCardProps {
@@ -133,7 +134,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
         {/* Environments & Endpoints Section */}
         <div className="space-y-2 mb-4">
           {/* Version 2.0 */}
-          {(site.v2?.dashboardUrl || site.v2?.editUrl) && (
+          {(site.v2?.dashboardUrl || site.v2?.editUrl || site.v2?.liveUrl) && (
             <div className="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 rounded-xl p-2.5">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] font-bold tracking-wider uppercase text-blue-600 dark:text-blue-400 font-mono">
@@ -141,6 +142,18 @@ export const SiteCard: React.FC<SiteCardProps> = ({
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
+                {site.v2.liveUrl && (
+                  <a
+                    href={site.v2.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:hover:bg-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 transition group"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                    <span>2.0 Live Site</span>
+                    <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </a>
+                )}
                 {site.v2.dashboardUrl && (
                   <a
                     href={site.v2.dashboardUrl}
@@ -169,7 +182,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
           )}
 
           {/* Version 3.0 */}
-          {(site.v3?.dashboardUrl || site.v3?.editUrl) && (
+          {(site.v3?.dashboardUrl || site.v3?.editUrl || site.v3?.liveUrl) && (
             <div className="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 rounded-xl p-2.5">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] font-bold tracking-wider uppercase text-emerald-600 dark:text-emerald-400 font-mono">
@@ -177,14 +190,26 @@ export const SiteCard: React.FC<SiteCardProps> = ({
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
+                {site.v3.liveUrl && (
+                  <a
+                    href={site.v3.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:hover:bg-emerald-900 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 transition group"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>3.0 Live Site</span>
+                    <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </a>
+                )}
                 {site.v3.dashboardUrl && (
                   <a
                     href={site.v3.dashboardUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:hover:bg-emerald-900 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 transition group"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/70 dark:hover:bg-indigo-900 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 transition group"
                   >
-                    <Monitor className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <Monitor className="w-3.5 h-3.5 text-indigo-500" />
                     <span>3.0 Dashboard URL</span>
                     <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </a>

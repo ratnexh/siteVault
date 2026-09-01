@@ -53,30 +53,30 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
-      <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
         
         {/* Brand & Left Tools */}
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           <button 
             onClick={onToggleMobileSidebar}
-            className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition shrink-0"
             aria-label="Toggle Navigation"
           >
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2.5">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 ring-2 ring-indigo-400/20">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 ring-2 ring-indigo-400/20 shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent truncate">
                   SiteVault
                 </h1>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60">
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5 animate-pulse"></span>
-                  {activeCount} Sites Active
+                  {activeCount} Sites
                 </span>
               </div>
             </div>
@@ -91,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Center Search & Right CTAs */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Quick Command Hint Button */}
           <button 
             onClick={onFocusSearch}
@@ -108,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80 px-3 py-2 rounded-lg shadow-sm transition"
+              className="flex items-center gap-1 sm:gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80 px-2.5 sm:px-3 py-2 rounded-lg shadow-sm transition"
             >
               <Download className="w-4 h-4 text-slate-500" />
               <span className="hidden sm:inline">Backup & Sync</span>
@@ -150,7 +150,7 @@ export const Header: React.FC<HeaderProps> = ({
                   className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center gap-2.5 transition"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  <span>Reset to Sample Data</span>
+                  <span>Clear All Vault Data</span>
                 </button>
               </div>
             )}
@@ -168,10 +168,10 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Add Site Primary Button */}
           <button
             onClick={onOpenAddModal}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white px-3.5 py-2 rounded-lg text-xs font-semibold shadow-sm shadow-indigo-600/30 transition"
+            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white px-2.5 sm:px-3.5 py-2 rounded-lg text-xs font-semibold shadow-sm shadow-indigo-600/30 transition shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span>Add New Site</span>
+            <span className="hidden sm:inline">Add New Site</span>
           </button>
         </div>
 

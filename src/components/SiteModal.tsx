@@ -23,8 +23,10 @@ export const SiteModal: React.FC<SiteModalProps> = ({
   const [tags, setTags] = useState('');
   const [v2DashboardUrl, setV2DashboardUrl] = useState('');
   const [v2EditUrl, setV2EditUrl] = useState('');
+  const [v2LiveUrl, setV2LiveUrl] = useState('');
   const [v3DashboardUrl, setV3DashboardUrl] = useState('');
   const [v3EditUrl, setV3EditUrl] = useState('');
+  const [v3LiveUrl, setV3LiveUrl] = useState('');
   const [docsUrl, setDocsUrl] = useState('');
   const [figmaUrl, setFigmaUrl] = useState('');
   const [email, setEmail] = useState('');
@@ -39,8 +41,10 @@ export const SiteModal: React.FC<SiteModalProps> = ({
       setTags((editingSite.tags || []).join(', '));
       setV2DashboardUrl(editingSite.v2?.dashboardUrl || '');
       setV2EditUrl(editingSite.v2?.editUrl || '');
+      setV2LiveUrl(editingSite.v2?.liveUrl || '');
       setV3DashboardUrl(editingSite.v3?.dashboardUrl || '');
       setV3EditUrl(editingSite.v3?.editUrl || '');
+      setV3LiveUrl(editingSite.v3?.liveUrl || '');
       setDocsUrl(editingSite.docsUrl || '');
       setFigmaUrl(editingSite.figmaUrl || '');
       setEmail(editingSite.credentials?.email || '');
@@ -53,8 +57,10 @@ export const SiteModal: React.FC<SiteModalProps> = ({
       setTags('');
       setV2DashboardUrl('');
       setV2EditUrl('');
+      setV2LiveUrl('');
       setV3DashboardUrl('');
       setV3EditUrl('');
+      setV3LiveUrl('');
       setDocsUrl('');
       setFigmaUrl('');
       setEmail('');
@@ -79,10 +85,12 @@ export const SiteModal: React.FC<SiteModalProps> = ({
       v2: {
         dashboardUrl: v2DashboardUrl.trim(),
         editUrl: v2EditUrl.trim(),
+        liveUrl: v2LiveUrl.trim(),
       },
       v3: {
         dashboardUrl: v3DashboardUrl.trim(),
         editUrl: v3EditUrl.trim(),
+        liveUrl: v3LiveUrl.trim(),
       },
       docsUrl: docsUrl.trim(),
       figmaUrl: figmaUrl.trim(),
@@ -214,6 +222,13 @@ export const SiteModal: React.FC<SiteModalProps> = ({
                 className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
+            <input
+              type="url"
+              value={v2LiveUrl}
+              onChange={(e) => setV2LiveUrl(e.target.value)}
+              placeholder="2.0 Live Production Site URL (https://...)"
+              className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            />
           </div>
 
           {/* 3.0 URLs Section */}
@@ -240,6 +255,13 @@ export const SiteModal: React.FC<SiteModalProps> = ({
                 className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
+            <input
+              type="url"
+              value={v3LiveUrl}
+              onChange={(e) => setV3LiveUrl(e.target.value)}
+              placeholder="3.0 Live Production Site URL (https://...)"
+              className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            />
           </div>
 
           {/* Specs & Figma Links */}

@@ -1,19 +1,24 @@
 import { SiteEntry } from '@/types/site';
 import { DEFAULT_SITES } from './constants';
 
-const STORAGE_KEY = 'sitevault_data';
+const STORAGE_KEY = 'sitevault_v2_data';
+const LEGACY_STORAGE_KEY = 'sitevault_data';
 const THEME_KEY = 'sitevault_theme';
 const DISMISS_BANNER_KEY = 'sitevault_dismiss_backup';
 
 export function loadSavedSites(): SiteEntry[] {
-  if (typeof window === 'undefined') return DEFAULT_SITES;
+  if (typeof window === 'undefined') return [];
   try {
+    // Purge legacy sample data cache if present
+    if (localStorage.getItem(LEGACY_STORAGE_KEY)) {
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+    }
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_SITES;
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : DEFAULT_SITES;
+    return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
-    return DEFAULT_SITES;
+    return [];
   }
 }
 

@@ -51,33 +51,45 @@ export const SiteTable: React.FC<SiteTableProps> = ({ sites, onEdit, onDelete })
                   </td>
                   <td className="px-4 py-3.5">
                     <div className="flex flex-col gap-1">
-                      {site.v2?.dashboardUrl ? (
+                      {site.v2?.liveUrl && (
+                        <a href={site.v2.liveUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-semibold">
+                          2.0 Live Site <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                      {site.v2?.dashboardUrl && (
                         <a href={site.v2.dashboardUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-semibold">
                           2.0 Dashboard <ExternalLink className="w-3 h-3" />
                         </a>
-                      ) : (
-                        <span className="text-slate-400">—</span>
                       )}
                       {site.v2?.editUrl && (
                         <a href={site.v2.editUrl} target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 font-semibold">
                           2.0 Edit CMS <ExternalLink className="w-3 h-3" />
                         </a>
                       )}
+                      {!site.v2?.liveUrl && !site.v2?.dashboardUrl && !site.v2?.editUrl && (
+                        <span className="text-slate-400">—</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3.5">
                     <div className="flex flex-col gap-1">
-                      {site.v3?.dashboardUrl ? (
-                        <a href={site.v3.dashboardUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 font-semibold">
+                      {site.v3?.liveUrl && (
+                        <a href={site.v3.liveUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 font-semibold">
+                          3.0 Live Site <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                      {site.v3?.dashboardUrl && (
+                        <a href={site.v3.dashboardUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-semibold">
                           3.0 Dashboard <ExternalLink className="w-3 h-3" />
                         </a>
-                      ) : (
-                        <span className="text-slate-400">—</span>
                       )}
                       {site.v3?.editUrl && (
                         <a href={site.v3.editUrl} target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 font-semibold">
                           3.0 Edit CMS <ExternalLink className="w-3 h-3" />
                         </a>
+                      )}
+                      {!site.v3?.liveUrl && !site.v3?.dashboardUrl && !site.v3?.editUrl && (
+                        <span className="text-slate-400">—</span>
                       )}
                     </div>
                   </td>

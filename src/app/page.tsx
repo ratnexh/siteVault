@@ -26,7 +26,7 @@ import { Toast } from '@/components/Toast';
 import { ShieldAlert, Plus, RotateCcw } from 'lucide-react';
 
 export default function Home() {
-  const [sites, setSites] = useState<SiteEntry[]>(DEFAULT_SITES);
+  const [sites, setSites] = useState<SiteEntry[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showBackupBanner, setShowBackupBanner] = useState(true);
@@ -159,11 +159,11 @@ export default function Home() {
     reader.readAsText(file);
   };
 
-  // Reset to default
+  // Reset / Clear vault
   const handleResetDefault = () => {
-    if (window.confirm('Reset vault back to standard sample data?')) {
-      setSites([...DEFAULT_SITES]);
-      showToast('Restored default 4 sample sites', 'info');
+    if (window.confirm('Are you sure you want to clear all vault site entries?')) {
+      setSites([]);
+      showToast('Vault cleared', 'info');
     }
   };
 
@@ -222,8 +222,8 @@ export default function Home() {
         const nameMatch = site.name.toLowerCase().includes(q);
         const notesMatch = site.credentials?.notes?.toLowerCase().includes(q) || false;
         const emailMatch = site.credentials?.email?.toLowerCase().includes(q) || false;
-        const v2Match = `${site.v2?.dashboardUrl || ''}${site.v2?.editUrl || ''}`.toLowerCase().includes(q);
-        const v3Match = `${site.v3?.dashboardUrl || ''}${site.v3?.editUrl || ''}`.toLowerCase().includes(q);
+        const v2Match = `${site.v2?.dashboardUrl || ''}${site.v2?.editUrl || ''}${site.v2?.liveUrl || ''}`.toLowerCase().includes(q);
+        const v3Match = `${site.v3?.dashboardUrl || ''}${site.v3?.editUrl || ''}${site.v3?.liveUrl || ''}`.toLowerCase().includes(q);
         return nameMatch || notesMatch || emailMatch || v2Match || v3Match;
       }
 
@@ -271,13 +271,21 @@ export default function Home() {
           activeFilterTag={activeTag}
           totalCount={sites.length}
           storageSizeText={storageSizeText}
-          onFilterTag={(tag) => setActiveTag(tag)}
+          onFilterTag={(tag) => {
+            setActiveTag(tag);
+            setMobileSidebarOpen(false);
+          }}
           onQuickSiteClick={(name) => {
             setSearchQuery(name);
+            setMobileSidebarOpen(false);
             searchInputRef.current?.scrollIntoView({ behavior: 'smooth' });
           }}
-          onShowVaultTips={() => setIsGuideModalOpen(true)}
+          onShowVaultTips={() => {
+            setIsGuideModalOpen(true);
+            setMobileSidebarOpen(false);
+          }}
           isOpenMobile={mobileSidebarOpen}
+          onCloseMobile={() => setMobileSidebarOpen(false)}
         />
 
         <main className="flex-1 min-w-0 flex flex-col gap-5">

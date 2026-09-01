@@ -3,7 +3,7 @@
 import React from 'react';
 import { SiteEntry } from '@/types/site';
 import { getThemeClasses } from '@/lib/storage';
-import { LayoutGrid, FileText, Figma, Shield, ChevronRight } from 'lucide-react';
+import { LayoutGrid, FileText, Figma, Shield, ChevronRight, X } from 'lucide-react';
 
 interface SidebarProps {
   sites: SiteEntry[];
@@ -14,6 +14,7 @@ interface SidebarProps {
   onQuickSiteClick: (siteName: string) => void;
   onShowVaultTips: () => void;
   isOpenMobile?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -25,9 +26,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onQuickSiteClick,
   onShowVaultTips,
   isOpenMobile = false,
+  onCloseMobile,
 }) => {
   return (
-    <aside className={`w-64 shrink-0 flex-col gap-6 select-none ${isOpenMobile ? 'flex' : 'hidden lg:flex'}`}>
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {isOpenMobile && (
+        <div 
+          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden transition-opacity"
+          onClick={onCloseMobile}
+        />
+      )}
+
+      <aside className={`
+        fixed top-0 left-0 bottom-0 z-50 w-72 bg-slate-50 dark:bg-slate-950 p-4 overflow-y-auto shadow-2xl transition-transform duration-300 lg:static lg:z-auto lg:w-64 lg:p-0 lg:bg-transparent lg:shadow-none lg:overflow-visible flex flex-col gap-6 select-none
+        ${isOpenMobile ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        {/* Mobile Header Bar in Sidebar */}
+        <div className="flex items-center justify-between lg:hidden pb-3 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <span className="font-bold text-sm text-slate-900 dark:text-white">SiteVault Navigation</span>
+          </div>
+          <button 
+            onClick={onCloseMobile}
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       
       {/* Quick Filter / Section Navigation */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
@@ -148,5 +175,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
     </aside>
+    </>
   );
 };
