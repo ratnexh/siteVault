@@ -3,17 +3,17 @@
 import React from 'react';
 import { SiteEntry } from '@/types/site';
 import { getThemeClasses, getStatusBadge, formatRelativeTime } from '@/lib/storage';
-import { 
-  FileText, 
-  Figma as FigmaIcon, 
-  Tag, 
-  Pencil, 
-  Trash2, 
-  ExternalLink, 
-  Copy, 
-  Eye, 
-  EyeOff, 
-  Monitor, 
+import {
+  FileText,
+  Figma as FigmaIcon,
+  Tag,
+  Pencil,
+  Trash2,
+  ExternalLink,
+  Copy,
+  Eye,
+  EyeOff,
+  Monitor,
   Edit3,
   Globe
 } from 'lucide-react';
@@ -174,7 +174,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:hover:bg-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 transition"
                   >
                     <Edit3 className="w-3.5 h-3.5 text-amber-500" />
-                    <span>2.0 Edit URL</span>
+                    <span>2.0 Preview URL</span>
                   </a>
                 )}
               </div>

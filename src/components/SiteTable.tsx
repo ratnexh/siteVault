@@ -63,7 +63,7 @@ export const SiteTable: React.FC<SiteTableProps> = ({ sites, onEdit, onDelete })
                       )}
                       {site.v2?.editUrl && (
                         <a href={site.v2.editUrl} target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 font-semibold">
-                          2.0 Edit CMS <ExternalLink className="w-3 h-3" />
+                          2.0 Preview URL<ExternalLink className="w-3 h-3" />
                         </a>
                       )}
                       {!site.v2?.liveUrl && !site.v2?.dashboardUrl && !site.v2?.editUrl && (
