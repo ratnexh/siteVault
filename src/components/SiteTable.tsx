@@ -3,7 +3,7 @@
 import React from 'react';
 import { SiteEntry } from '@/types/site';
 import { getThemeClasses, getStatusBadge } from '@/lib/storage';
-import { Pencil, Trash2, ExternalLink } from 'lucide-react';
+import { Pencil, Trash2, ExternalLink, FileText, Figma as FigmaIcon } from 'lucide-react';
 
 interface SiteTableProps {
   sites: SiteEntry[];
@@ -41,6 +41,49 @@ export const SiteTable: React.FC<SiteTableProps> = ({ sites, onEdit, onDelete })
                       <div>
                         <div className="font-bold text-slate-900 dark:text-white">{site.name}</div>
                         <div className="text-[11px] text-slate-400 font-mono">ID: {site.id}</div>
+                        {/* Quick Spec & Figma Links */}
+                        <div className="flex flex-wrap items-center gap-1 mt-1">
+                          {site.docsUrl && (
+                            <a
+                              href={site.docsUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/60 hover:underline"
+                            >
+                              <FileText className="w-2.5 h-2.5 text-sky-500" />
+                              Docs
+                            </a>
+                          )}
+                          {site.figmaUrl && (
+                            <a
+                              href={site.figmaUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-pink-50 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300 border border-pink-200/60 hover:underline"
+                            >
+                              <FigmaIcon className="w-2.5 h-2.5 text-pink-500" />
+                              Figma
+                            </a>
+                          )}
+                          {(site.extraLinks || []).map((extra, i) => (
+                            <a
+                              key={extra.id || i}
+                              href={extra.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium border hover:underline max-w-[110px] truncate ${
+                                extra.type === 'figma'
+                                  ? 'bg-pink-50 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300 border-pink-200/60'
+                                  : extra.type === 'doc'
+                                  ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border-sky-200/60'
+                                  : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200/60'
+                              }`}
+                              title={extra.title}
+                            >
+                              {extra.title}
+                            </a>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </td>

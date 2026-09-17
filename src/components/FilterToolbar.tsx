@@ -13,8 +13,6 @@ interface FilterToolbarProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onClearSearch: () => void;
-  activeTag: string;
-  onSetTag: (tag: string) => void;
   searchInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
@@ -27,8 +25,6 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
   searchQuery,
   onSearchChange,
   onClearSearch,
-  activeTag,
-  onSetTag,
   searchInputRef,
 }) => {
   return (
@@ -90,73 +86,27 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
         </div>
       </div>
 
-      {/* Search Bar & Quick Tag Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-            <Search className="w-4 h-4" />
-          </div>
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search by Site Name, 2.0 ID, 3.0 ID, or notes..."
-            className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition"
-          />
-          {searchQuery && (
-            <button
-              onClick={onClearSearch}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+      {/* Search Bar */}
+      <div className="relative w-full">
+        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <Search className="w-4 h-4" />
         </div>
-
-        {/* Quick Tag Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        <input
+          ref={searchInputRef}
+          type="text"
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search by Site Name, 2.0 ID, 3.0 ID, or notes..."
+          className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition"
+        />
+        {searchQuery && (
           <button
-            onClick={() => onSetTag('all')}
-            className={`px-3 py-2 rounded-xl text-xs whitespace-nowrap transition shadow-sm ${
-              activeTag === 'all'
-                ? 'font-semibold bg-slate-900 dark:bg-white text-white dark:text-slate-900'
-                : 'font-medium bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 hover:text-indigo-600'
-            }`}
+            onClick={onClearSearch}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           >
-            All
+            <X className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => onSetTag('Docs')}
-            className={`px-3 py-2 rounded-xl text-xs whitespace-nowrap transition ${
-              activeTag === 'Docs'
-                ? 'font-semibold bg-slate-900 dark:bg-white text-white dark:text-slate-900'
-                : 'font-medium bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 hover:text-indigo-600'
-            }`}
-          >
-            📄 Docs
-          </button>
-          <button
-            onClick={() => onSetTag('Figma')}
-            className={`px-3 py-2 rounded-xl text-xs whitespace-nowrap transition ${
-              activeTag === 'Figma'
-                ? 'font-semibold bg-slate-900 dark:bg-white text-white dark:text-slate-900'
-                : 'font-medium bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 hover:text-indigo-600'
-            }`}
-          >
-            🎨 Figma
-          </button>
-          <button
-            onClick={() => onSetTag('Amends')}
-            className={`px-3 py-2 rounded-xl text-xs whitespace-nowrap transition ${
-              activeTag === 'Amends'
-                ? 'font-semibold bg-slate-900 dark:bg-white text-white dark:text-slate-900'
-                : 'font-medium bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 hover:text-indigo-600'
-            }`}
-          >
-            ✏️ Amends
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -14,6 +14,13 @@ export interface SiteCredentials {
   notes?: string;
 }
 
+export interface ResourceLink {
+  id: string;
+  title: string;
+  url: string;
+  type?: 'doc' | 'figma' | 'other';
+}
+
 export interface SiteEntry {
   id: string;
   name: string;
@@ -25,6 +32,7 @@ export interface SiteEntry {
   v3: SiteEndpoints;
   docsUrl: string;
   figmaUrl: string;
+  extraLinks?: ResourceLink[];
   credentials: SiteCredentials;
   updatedAt: string;
 }

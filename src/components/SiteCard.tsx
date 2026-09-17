@@ -90,33 +90,89 @@ export const SiteCard: React.FC<SiteCardProps> = ({
 
         {/* Tags & Spec Links Row */}
         <div className="flex flex-wrap items-center gap-1.5 mb-4">
+          {/* Primary Docs */}
           {site.docsUrl && (
             <a
               href={site.docsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/60 hover:bg-sky-100 transition"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition shadow-sm"
+              title="Documentation"
             >
               <FileText className="w-3.5 h-3.5 text-sky-500" />
               <span>Docs</span>
             </a>
           )}
 
+          {/* Primary Figma */}
           {site.figmaUrl ? (
             <a
               href={site.figmaUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-pink-50 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300 border border-pink-200/80 dark:border-pink-800/60 hover:bg-pink-100 transition"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-pink-50 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300 border border-pink-200/80 dark:border-pink-800/60 hover:bg-pink-100 dark:hover:bg-pink-900/60 transition shadow-sm"
+              title="Figma Project"
             >
               <FigmaIcon className="w-3.5 h-3.5 text-pink-500" />
               <span>Figma</span>
             </a>
-          ) : site.noFigma ? (
+          ) : site.noFigma && (!site.extraLinks || site.extraLinks.filter((l) => l.type === 'figma').length === 0) ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
               <span>No Figma</span>
             </span>
           ) : null}
+
+          {/* Extra Links & Specs */}
+          {(site.extraLinks || []).map((link, idx) => {
+            const isFigma = link.type === 'figma' || link.url.includes('figma.com');
+            const isDoc = link.type === 'doc';
+
+            if (isFigma) {
+              return (
+                <a
+                  key={link.id || idx}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-pink-50 text-pink-700 dark:bg-pink-950/50 dark:text-pink-300 border border-pink-200/70 dark:border-pink-800/50 hover:bg-pink-100 dark:hover:bg-pink-900/40 transition max-w-[160px]"
+                  title={link.title || 'Figma Link'}
+                >
+                  <FigmaIcon className="w-3 h-3 text-pink-500 shrink-0" />
+                  <span className="truncate">{link.title || 'Figma'}</span>
+                </a>
+              );
+            }
+
+            if (isDoc) {
+              return (
+                <a
+                  key={link.id || idx}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200/70 dark:border-sky-800/50 hover:bg-sky-100 dark:hover:bg-sky-900/40 transition max-w-[160px]"
+                  title={link.title || 'Documentation'}
+                >
+                  <FileText className="w-3 h-3 text-sky-500 shrink-0" />
+                  <span className="truncate">{link.title || 'Doc'}</span>
+                </a>
+              );
+            }
+
+            return (
+              <a
+                key={link.id || idx}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700/60 transition max-w-[160px]"
+                title={link.title || link.url}
+              >
+                <ExternalLink className="w-3 h-3 text-slate-500 shrink-0" />
+                <span className="truncate">{link.title || 'Resource'}</span>
+              </a>
+            );
+          })}
 
           {(site.tags || [])
             .filter((t) => t !== 'Docs' && t !== 'Figma')

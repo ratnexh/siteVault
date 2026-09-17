@@ -11,7 +11,7 @@ import {
   Moon, 
   Plus, 
   Menu, 
-  ChevronDown 
+  ChevronDown
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -168,10 +168,11 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Add Site Primary Button */}
           <button
             onClick={onOpenAddModal}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white px-2.5 sm:px-3.5 py-2 rounded-lg text-xs font-semibold shadow-sm shadow-indigo-600/30 transition shrink-0"
+            className="flex items-center gap-1.5 bg-slate-900 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-700 active:scale-[0.98] text-white px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold shadow-sm transition shrink-0"
+            title="Add new site vault entry"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Add New Site</span>
+            <span>Add Site</span>
           </button>
         </div>
 

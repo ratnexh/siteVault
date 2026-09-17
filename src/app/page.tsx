@@ -21,9 +21,10 @@ import { FilterToolbar } from '@/components/FilterToolbar';
 import { SiteCard } from '@/components/SiteCard';
 import { SiteTable } from '@/components/SiteTable';
 import { SiteModal } from '@/components/SiteModal';
+import { SmartAddModal } from '@/components/SmartAddModal';
 import { SecurityGuideModal } from '@/components/SecurityGuideModal';
 import { Toast } from '@/components/Toast';
-import { ShieldAlert, Plus, RotateCcw } from 'lucide-react';
+import { ShieldAlert, Plus, RotateCcw, Sparkles } from 'lucide-react';
 
 export default function Home() {
   const [sites, setSites] = useState<SiteEntry[]>([]);
@@ -33,7 +34,6 @@ export default function Home() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Filters & State
-  const [activeTag, setActiveTag] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -41,7 +41,9 @@ export default function Home() {
   // Modals & UI State
   const [revealedPasswords, setRevealedPasswords] = useState<Set<string>>(new Set());
   const [isSiteModalOpen, setIsSiteModalOpen] = useState<boolean>(false);
+  const [isSmartAddModalOpen, setIsSmartAddModalOpen] = useState<boolean>(false);
   const [editingSite, setEditingSite] = useState<SiteEntry | null>(null);
+  const [modalInitialData, setModalInitialData] = useState<Partial<Omit<SiteEntry, 'id' | 'updatedAt'>> | null>(null);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -81,6 +83,10 @@ export default function Home() {
         e.preventDefault();
         searchInputRef.current?.focus();
         searchInputRef.current?.select();
+      }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'a' || e.key === 'A')) {
+        e.preventDefault();
+        setIsSmartAddModalOpen(true);
       }
       if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         e.preventDefault();
@@ -195,6 +201,30 @@ export default function Home() {
     }
     setIsSiteModalOpen(false);
     setEditingSite(null);
+    setModalInitialData(null);
+  };
+
+  // Batch / Smart Add Save
+  const handleSaveMultipleSites = (newSites: (Omit<SiteEntry, 'id' | 'updatedAt'> & { id?: string })[]) => {
+    const nowIso = new Date().toISOString();
+    const created: SiteEntry[] = newSites.map((s, idx) => ({
+      ...s,
+      id: s.id || `site_${Date.now()}_${idx}`,
+      updatedAt: nowIso,
+    }));
+    setSites((prev) => [...created, ...prev]);
+    showToast(
+      created.length === 1
+        ? `"${created[0].name}" added to vault via Smart Add!`
+        : `Added ${created.length} sites to vault!`,
+      'success'
+    );
+  };
+
+  const handleOpenFullFormWithData = (data: Omit<SiteEntry, 'id' | 'updatedAt'>) => {
+    setEditingSite(null);
+    setModalInitialData(data);
+    setIsSiteModalOpen(true);
   };
 
   // Delete Site
@@ -210,12 +240,6 @@ export default function Home() {
   // Filtered & Sorted Sites
   const filteredAndSortedSites = useMemo(() => {
     let result = sites.filter((site) => {
-      // Tag Filter
-      if (activeTag !== 'all') {
-        const hasTag = site.tags && site.tags.some((t) => t.toLowerCase().includes(activeTag.toLowerCase()));
-        if (!hasTag) return false;
-      }
-
       // Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.trim().toLowerCase();
@@ -242,7 +266,7 @@ export default function Home() {
     }
 
     return result;
-  }, [sites, activeTag, searchQuery, sortBy]);
+  }, [sites, searchQuery, sortBy]);
 
   const storageSizeText = useMemo(() => getVaultStorageSizeKB(sites), [sites]);
 
@@ -254,6 +278,7 @@ export default function Home() {
         onToggleDarkMode={handleToggleDarkMode}
         onOpenAddModal={() => {
           setEditingSite(null);
+          setModalInitialData(null);
           setIsSiteModalOpen(true);
         }}
         onFocusSearch={() => searchInputRef.current?.focus()}
@@ -268,21 +293,12 @@ export default function Home() {
         
         <Sidebar
           sites={sites}
-          activeFilterTag={activeTag}
           totalCount={sites.length}
           storageSizeText={storageSizeText}
-          onFilterTag={(tag) => {
-            setActiveTag(tag);
-            setMobileSidebarOpen(false);
-          }}
           onQuickSiteClick={(name) => {
             setSearchQuery(name);
             setMobileSidebarOpen(false);
             searchInputRef.current?.scrollIntoView({ behavior: 'smooth' });
-          }}
-          onShowVaultTips={() => {
-            setIsGuideModalOpen(true);
-            setMobileSidebarOpen(false);
           }}
           isOpenMobile={mobileSidebarOpen}
           onCloseMobile={() => setMobileSidebarOpen(false)}
@@ -305,12 +321,7 @@ export default function Home() {
             onSetSortBy={setSortBy}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            onClearSearch={() => {
-              setSearchQuery('');
-              setActiveTag('all');
-            }}
-            activeTag={activeTag}
-            onSetTag={setActiveTag}
+            onClearSearch={() => setSearchQuery('')}
             searchInputRef={searchInputRef}
           />
 
@@ -322,28 +333,28 @@ export default function Home() {
               </div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">No Sites Found</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1 mb-5">
-                No site entries match your current search keywords or filters. Clear the search or create a new entry.
+                No site entries match your current search query. Clear the search or create a new entry.
               </p>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setActiveTag('all');
-                  }}
-                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition flex items-center gap-1.5"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Reset Filters</span>
-                </button>
+              <div className="flex items-center gap-3 flex-wrap justify-center">
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition flex items-center gap-1.5"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Clear Search</span>
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setEditingSite(null);
+                    setModalInitialData(null);
                     setIsSiteModalOpen(true);
                   }}
-                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition flex items-center gap-1.5"
+                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-900 dark:bg-indigo-600 text-white hover:bg-slate-800 dark:hover:bg-indigo-700 transition flex items-center gap-1.5 shadow-sm"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add New Site</span>
+                  <span>Add Site</span>
                 </button>
               </div>
             </div>
@@ -379,12 +390,21 @@ export default function Home() {
       </div>
 
       {/* Modals */}
+      <SmartAddModal
+        isOpen={isSmartAddModalOpen}
+        onClose={() => setIsSmartAddModalOpen(false)}
+        onSaveSites={handleSaveMultipleSites}
+        onOpenFullFormWithData={handleOpenFullFormWithData}
+      />
+
       <SiteModal
         isOpen={isSiteModalOpen}
         editingSite={editingSite}
+        initialData={modalInitialData}
         onClose={() => {
           setIsSiteModalOpen(false);
           setEditingSite(null);
+          setModalInitialData(null);
         }}
         onSave={handleSaveSite}
       />
