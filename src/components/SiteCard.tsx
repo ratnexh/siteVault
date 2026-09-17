@@ -2,11 +2,10 @@
 
 import React from 'react';
 import { SiteEntry } from '@/types/site';
-import { getThemeClasses, getStatusBadge, formatRelativeTime } from '@/lib/storage';
+import { getThemeClasses, formatRelativeTime } from '@/lib/storage';
 import {
   FileText,
   Figma as FigmaIcon,
-  Tag,
   Pencil,
   Trash2,
   ExternalLink,
@@ -50,7 +49,10 @@ export const SiteCard: React.FC<SiteCardProps> = ({
         {/* Card Header */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className={`w-10 h-10 rounded-xl ${theme.bg} text-white font-bold flex items-center justify-center text-sm shadow-sm shrink-0`}>
+            <div
+              className={`w-10 h-10 rounded-xl ${theme.bg} text-white font-bold flex items-center justify-center text-sm shadow-sm shrink-0`}
+              style={site.color?.startsWith('#') ? { backgroundColor: site.color } : undefined}
+            >
               {initial}
             </div>
             <div className="min-w-0">
@@ -58,10 +60,6 @@ export const SiteCard: React.FC<SiteCardProps> = ({
                 {site.name}
               </h3>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold border ${getStatusBadge(site.status)}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${site.status === 'Live' ? 'bg-emerald-500' : site.status === 'Staging' ? 'bg-amber-500' : 'bg-purple-500'}`}></span>
-                  {site.status || 'Active'}
-                </span>
                 <span className="text-[11px] text-slate-400 font-mono">
                   Updated {formatRelativeTime(site.updatedAt)}
                 </span>
@@ -174,17 +172,6 @@ export const SiteCard: React.FC<SiteCardProps> = ({
             );
           })}
 
-          {(site.tags || [])
-            .filter((t) => t !== 'Docs' && t !== 'Figma')
-            .map((t, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200/70 dark:border-purple-800/50"
-              >
-                <Tag className="w-3 h-3 mr-1 text-purple-400" />
-                {t}
-              </span>
-            ))}
         </div>
 
         {/* Environments & Endpoints Section */}

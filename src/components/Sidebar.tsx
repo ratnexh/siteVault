@@ -1,15 +1,17 @@
 'use client';
 
 import React from 'react';
-import { SiteEntry } from '@/types/site';
+import { SiteEntry, SiteColor } from '@/types/site';
 import { getThemeClasses } from '@/lib/storage';
-import { Shield, ChevronRight, X } from 'lucide-react';
+import { Shield, ChevronRight, X, LayoutGrid } from 'lucide-react';
 
 interface SidebarProps {
   sites: SiteEntry[];
   totalCount: number;
   storageSizeText: string;
   onQuickSiteClick: (siteName: string) => void;
+  onViewAll?: () => void;
+  activeSiteName?: string;
   isOpenMobile?: boolean;
   onCloseMobile?: () => void;
 }
@@ -19,6 +21,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   totalCount,
   storageSizeText,
   onQuickSiteClick,
+  onViewAll,
+  activeSiteName = '',
   isOpenMobile = false,
   onCloseMobile,
 }) => {
@@ -60,19 +64,58 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           
           <div className="space-y-1 max-h-96 overflow-y-auto pr-1">
-            {sites.map((site) => {
-              const theme = getThemeClasses(site.color || 'indigo');
+            {/* View All Option */}
+            <button
+              onClick={onViewAll}
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg transition text-left mb-1.5 ${
+                !activeSiteName
+                  ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-semibold shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 font-medium'
+              }`}
+            >
+              <span className="flex items-center gap-2 truncate">
+                <span className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
+                  !activeSiteName
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                }`}>
+                  <LayoutGrid className="w-3 h-3" />
+                </span>
+                <span className="truncate">View All</span>
+              </span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                !activeSiteName
+                  ? 'bg-indigo-200/60 dark:bg-indigo-900/80 text-indigo-800 dark:text-indigo-200 font-bold'
+                  : 'text-slate-400 dark:text-slate-500'
+              }`}>
+                {totalCount}
+              </span>
+            </button>
+
+            {sites.map((site, idx) => {
+              const AVATAR_PALETTE: SiteColor[] = ['indigo', 'rose', 'emerald', 'blue', 'amber', 'purple'];
+              const avatarColor = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
+              const theme = getThemeClasses(avatarColor);
+              const isSelected = activeSiteName?.toLowerCase() === site.name.toLowerCase();
+
               return (
                 <button
                   key={site.id}
                   onClick={() => onQuickSiteClick(site.name)}
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition group text-left"
+                  className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg transition group text-left ${
+                    isSelected
+                      ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-semibold shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 font-medium'
+                  }`}
                 >
                   <span className="flex items-center gap-2 truncate">
-                    <span className={`w-5 h-5 rounded-md ${theme.bg} text-white font-bold text-[10px] flex items-center justify-center shrink-0`}>
+                    <span
+                      className={`w-5 h-5 rounded-md ${theme.bg} text-white font-bold text-[10px] flex items-center justify-center shrink-0 shadow-xs`}
+                      style={site.color?.startsWith('#') ? { backgroundColor: site.color } : undefined}
+                    >
                       {site.name.charAt(0).toUpperCase()}
                     </span>
-                    <span className="truncate font-medium">{site.name}</span>
+                    <span className="truncate">{site.name}</span>
                   </span>
                   <ChevronRight className="w-3.5 h-3.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>

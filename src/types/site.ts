@@ -1,6 +1,21 @@
 export type SiteStatus = 'Live' | 'Staging' | 'Amends' | 'Maintenance';
 
-export type SiteColor = 'indigo' | 'blue' | 'purple' | 'emerald' | 'rose' | 'amber';
+export type SiteColor =
+  | 'indigo'
+  | 'blue'
+  | 'cyan'
+  | 'teal'
+  | 'emerald'
+  | 'green'
+  | 'amber'
+  | 'orange'
+  | 'rose'
+  | 'red'
+  | 'pink'
+  | 'purple'
+  | 'violet'
+  | 'slate'
+  | (string & {});
 
 export interface SiteEndpoints {
   dashboardUrl: string;
@@ -24,9 +39,9 @@ export interface ResourceLink {
 export interface SiteEntry {
   id: string;
   name: string;
-  color: SiteColor;
-  status: SiteStatus;
-  tags: string[];
+  color?: SiteColor;
+  status?: SiteStatus;
+  tags?: string[];
   noFigma: boolean;
   v2: SiteEndpoints;
   v3: SiteEndpoints;
@@ -38,7 +53,7 @@ export interface SiteEntry {
 }
 
 export type ViewMode = 'grid' | 'table';
-export type SortOption = 'recent' | 'name_asc' | 'name_desc' | 'status';
+export type SortOption = 'recent' | 'name_asc' | 'name_desc';
 export type ToastType = 'success' | 'info' | 'error';
 
 export interface ToastMessage {

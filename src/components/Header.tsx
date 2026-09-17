@@ -110,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-1 sm:gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80 px-2.5 sm:px-3 py-2 rounded-lg shadow-sm transition"
             >
-              <Download className="w-4 h-4 text-slate-500" />
+              <Upload className="w-4 h-4 text-slate-500" />
               <span className="hidden sm:inline">Backup & Sync</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-0.5" />
             </button>
@@ -124,11 +124,11 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition"
                 >
-                  <Download className="w-4 h-4 text-indigo-500" />
+                  <Upload className="w-4 h-4 text-indigo-500" />
                   <span>Export JSON Backup</span>
                 </button>
                 <label className="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 cursor-pointer transition">
-                  <Upload className="w-4 h-4 text-emerald-500" />
+                  <Download className="w-4 h-4 text-emerald-500" />
                   <span>Import JSON File</span>
                   <input
                     type="file"

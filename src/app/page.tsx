@@ -11,6 +11,10 @@ import {
   setSavedTheme, 
   isBackupBannerDismissed, 
   setBackupBannerDismissed, 
+  getSavedViewMode,
+  setSavedViewMode,
+  getSavedSortOption,
+  setSavedSortOption,
   exportVaultJSON 
 } from '@/lib/storage';
 
@@ -23,6 +27,7 @@ import { SiteTable } from '@/components/SiteTable';
 import { SiteModal } from '@/components/SiteModal';
 import { SmartAddModal } from '@/components/SmartAddModal';
 import { SecurityGuideModal } from '@/components/SecurityGuideModal';
+import { ConfirmModal, ConfirmDialogState } from '@/components/ConfirmModal';
 import { Toast } from '@/components/Toast';
 import { ShieldAlert, Plus, RotateCcw, Sparkles } from 'lucide-react';
 
@@ -45,9 +50,32 @@ export default function Home() {
   const [editingSite, setEditingSite] = useState<SiteEntry | null>(null);
   const [modalInitialData, setModalInitialData] = useState<Partial<Omit<SiteEntry, 'id' | 'updatedAt'>> | null>(null);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState<boolean>(false);
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const openConfirmDialog = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    options?: { confirmLabel?: string; cancelLabel?: string; variant?: 'danger' | 'warning' | 'primary' }
+  ) => {
+    setConfirmDialog({
+      isOpen: true,
+      title,
+      message,
+      confirmLabel: options?.confirmLabel,
+      cancelLabel: options?.cancelLabel,
+      variant: options?.variant || 'danger',
+      onConfirm,
+    });
+  };
 
   // Boot & initial load
   useEffect(() => {
@@ -66,6 +94,9 @@ export default function Home() {
       setShowBackupBanner(false);
     }
 
+    setViewMode(getSavedViewMode());
+    setSortBy(getSavedSortOption());
+
     setIsLoaded(true);
   }, []);
 
@@ -75,6 +106,20 @@ export default function Home() {
       saveSitesToStorage(sites);
     }
   }, [sites, isLoaded]);
+
+  // Remember view mode preference
+  useEffect(() => {
+    if (isLoaded) {
+      setSavedViewMode(viewMode);
+    }
+  }, [viewMode, isLoaded]);
+
+  // Remember sort option preference
+  useEffect(() => {
+    if (isLoaded) {
+      setSavedSortOption(sortBy);
+    }
+  }, [sortBy, isLoaded]);
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -167,10 +212,18 @@ export default function Home() {
 
   // Reset / Clear vault
   const handleResetDefault = () => {
-    if (window.confirm('Are you sure you want to clear all vault site entries?')) {
-      setSites([]);
-      showToast('Vault cleared', 'info');
-    }
+    openConfirmDialog(
+      'Clear All Vault Data?',
+      'Are you sure you want to clear all vault site entries? This will delete all saved credentials and URLs from your local storage.',
+      () => {
+        setSites([]);
+        showToast('Vault cleared', 'info');
+      },
+      {
+        confirmLabel: 'Clear All Data',
+        variant: 'danger',
+      }
+    );
   };
 
   // Dismiss Banner
@@ -231,10 +284,18 @@ export default function Home() {
   const handleDeleteSite = (siteId: string) => {
     const target = sites.find((s) => s.id === siteId);
     if (!target) return;
-    if (window.confirm(`Are you sure you want to remove "${target.name}" from your vault?`)) {
-      setSites((prev) => prev.filter((s) => s.id !== siteId));
-      showToast('Site entry removed', 'info');
-    }
+    openConfirmDialog(
+      `Remove "${target.name}"?`,
+      `Are you sure you want to remove "${target.name}" from your vault? Credentials and endpoint links will be deleted.`,
+      () => {
+        setSites((prev) => prev.filter((s) => s.id !== siteId));
+        showToast(`"${target.name}" removed from vault`, 'info');
+      },
+      {
+        confirmLabel: 'Delete Entry',
+        variant: 'danger',
+      }
+    );
   };
 
   // Filtered & Sorted Sites
@@ -261,8 +322,6 @@ export default function Home() {
       result.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortBy === 'name_desc') {
       result.sort((a, b) => b.name.localeCompare(a.name));
-    } else if (sortBy === 'status') {
-      result.sort((a, b) => (a.status || '').localeCompare(b.status || ''));
     }
 
     return result;
@@ -295,6 +354,11 @@ export default function Home() {
           sites={sites}
           totalCount={sites.length}
           storageSizeText={storageSizeText}
+          activeSiteName={searchQuery}
+          onViewAll={() => {
+            setSearchQuery('');
+            setMobileSidebarOpen(false);
+          }}
           onQuickSiteClick={(name) => {
             setSearchQuery(name);
             setMobileSidebarOpen(false);
@@ -412,6 +476,12 @@ export default function Home() {
       <SecurityGuideModal
         isOpen={isGuideModalOpen}
         onClose={() => setIsGuideModalOpen(false)}
+      />
+
+      {/* Custom Confirmation Popup */}
+      <ConfirmModal
+        config={confirmDialog}
+        onClose={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
       />
 
       {/* Toast Notifications */}

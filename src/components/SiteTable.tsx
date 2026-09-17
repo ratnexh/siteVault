@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { SiteEntry } from '@/types/site';
-import { getThemeClasses, getStatusBadge } from '@/lib/storage';
+import { getThemeClasses } from '@/lib/storage';
 import { Pencil, Trash2, ExternalLink, FileText, Figma as FigmaIcon } from 'lucide-react';
 
 interface SiteTableProps {
@@ -19,7 +19,6 @@ export const SiteTable: React.FC<SiteTableProps> = ({ sites, onEdit, onDelete })
           <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase font-semibold text-[11px] tracking-wider">
             <tr>
               <th className="px-5 py-3.5">Site Name</th>
-              <th className="px-4 py-3.5">Status</th>
               <th className="px-4 py-3.5">Version 2.0 URLs</th>
               <th className="px-4 py-3.5">Version 3.0 URLs</th>
               <th className="px-4 py-3.5">Credentials & Notes</th>
@@ -35,7 +34,10 @@ export const SiteTable: React.FC<SiteTableProps> = ({ sites, onEdit, onDelete })
                 <tr key={site.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg ${theme.bg} text-white font-bold flex items-center justify-center text-xs shadow-sm shrink-0`}>
+                      <div
+                        className={`w-8 h-8 rounded-lg ${theme.bg} text-white font-bold flex items-center justify-center text-xs shadow-sm shrink-0`}
+                        style={site.color?.startsWith('#') ? { backgroundColor: site.color } : undefined}
+                      >
                         {initial}
                       </div>
                       <div>
@@ -86,11 +88,6 @@ export const SiteTable: React.FC<SiteTableProps> = ({ sites, onEdit, onDelete })
                         </div>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold border ${getStatusBadge(site.status)}`}>
-                      {site.status || 'Active'}
-                    </span>
                   </td>
                   <td className="px-4 py-3.5">
                     <div className="flex flex-col gap-1">

@@ -80,7 +80,6 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
               <option value="recent">Recently Updated</option>
               <option value="name_asc">Name (A-Z)</option>
               <option value="name_desc">Name (Z-A)</option>
-              <option value="status">By Status</option>
             </select>
           </div>
         </div>
