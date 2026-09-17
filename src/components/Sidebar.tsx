@@ -3,7 +3,8 @@
 import React from 'react';
 import { SiteEntry, SiteColor } from '@/types/site';
 import { getThemeClasses } from '@/lib/storage';
-import { Shield, ChevronRight, X, LayoutGrid } from 'lucide-react';
+import { ChevronRight, X, LayoutGrid } from 'lucide-react';
+import { SiteLogo } from '@/components/SiteLogo';
 
 interface SidebarProps {
   sites: SiteEntry[];
@@ -42,10 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       `}>
         {/* Mobile Header Bar in Sidebar */}
         <div className="flex items-center justify-between lg:hidden pb-3 border-b border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <span className="font-bold text-sm text-slate-900 dark:text-white">SiteVault Navigation</span>
-          </div>
+          <SiteLogo size="sm" />
           <button 
             onClick={onCloseMobile}
             className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition"

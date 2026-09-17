@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  ShieldCheck, 
   Search, 
   Download, 
   Upload, 
@@ -13,6 +12,7 @@ import {
   Menu, 
   ChevronDown
 } from 'lucide-react';
+import { SiteLogo } from '@/components/SiteLogo';
 
 interface HeaderProps {
   activeCount: number;
@@ -65,24 +65,9 @@ export const Header: React.FC<HeaderProps> = ({
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 ring-2 ring-indigo-400/20 shrink-0">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent truncate">
-                  SiteVault
-                </h1>
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 shrink-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5 animate-pulse"></span>
-                  {activeCount} Sites
-                </span>
-              </div>
-            </div>
-          </div>
+          <SiteLogo activeCount={activeCount} />
 
-          <div className="hidden md:flex items-center ml-4 pl-4 border-l border-slate-200 dark:border-slate-800">
+          <div className="hidden xl:flex items-center ml-4 pl-4 border-l border-slate-200 dark:border-slate-800 shrink-0">
             <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1 rounded-md border border-slate-200/60 dark:border-slate-700/60 font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               <span>Local Vault Sync: Protected</span>
@@ -91,11 +76,11 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Center Search & Right CTAs */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           {/* Quick Command Hint Button */}
           <button 
             onClick={onFocusSearch}
-            className="hidden md:flex items-center gap-2 text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition"
+            className="hidden lg:flex items-center gap-2 text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition"
           >
             <Search className="w-3.5 h-3.5 text-slate-400" />
             <span>Quick Jump</span>

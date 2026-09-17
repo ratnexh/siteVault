@@ -43,7 +43,7 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
         </div>
 
         {/* Grid/Table View & Sort Dropdown */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
           {/* View Selector */}
           <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-xl shadow-sm">
             <button
