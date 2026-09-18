@@ -1,4 +1,5 @@
 import { SiteColor, SiteStatus, SiteEntry, ResourceLink } from '@/types/site';
+import { QUICK_MENU_PALETTE, getQuickMenuColor } from './storage';
 
 export interface DetectedSiteData {
   name: string;
@@ -26,7 +27,7 @@ export interface DetectedSiteData {
   rawMatchesCount: number;
 }
 
-const COLOR_PALETTE: SiteColor[] = ['indigo', 'blue', 'purple', 'emerald', 'rose', 'amber'];
+const COLOR_PALETTE: SiteColor[] = QUICK_MENU_PALETTE;
 
 /**
  * Derives a human-readable clean name from a hostname/domain.
@@ -64,11 +65,11 @@ export function deriveNameFromDomain(domain: string): string {
 /**
  * Parses raw text containing URLs, credentials, and notes for a single site entry.
  */
-export function parseSingleSiteDump(text: string): DetectedSiteData {
+export function parseSingleSiteDump(text: string, siteIndex?: number, explicitColor?: SiteColor): DetectedSiteData {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
   let detectedName = '';
-  let color: SiteColor = 'indigo';
+  let color: SiteColor = explicitColor || (siteIndex !== undefined ? getQuickMenuColor(siteIndex) : 'indigo');
   let status: SiteStatus = 'Live';
   const detectedTags: Set<string> = new Set();
 
@@ -326,13 +327,19 @@ export function parseSingleSiteDump(text: string): DetectedSiteData {
     }
   }
 
-  // Assign harmonic badge color based on name
-  let hash = 0;
-  for (let i = 0; i < detectedName.length; i++) {
-    hash = (hash << 5) - hash + detectedName.charCodeAt(i);
-    hash |= 0;
+  // Assign harmonic badge color based on quick menu palette
+  if (explicitColor) {
+    color = explicitColor;
+  } else if (siteIndex !== undefined) {
+    color = getQuickMenuColor(siteIndex);
+  } else {
+    let hash = 0;
+    for (let i = 0; i < detectedName.length; i++) {
+      hash = (hash << 5) - hash + detectedName.charCodeAt(i);
+      hash |= 0;
+    }
+    color = COLOR_PALETTE[Math.abs(hash) % COLOR_PALETTE.length];
   }
-  color = COLOR_PALETTE[Math.abs(hash) % COLOR_PALETTE.length];
 
   // Add version tags
   if (v3Dashboard || v3Edit || v3Live) {
@@ -373,7 +380,7 @@ export function parseSingleSiteDump(text: string): DetectedSiteData {
  * Detects whether the input contains multiple sites (e.g. separated by "---",
  * multiple "Site:" headers, or distinct blank line sections with different domains).
  */
-export function parseSmartLinkDump(text: string): DetectedSiteData[] {
+export function parseSmartLinkDump(text: string, startIndex = 0): DetectedSiteData[] {
   const trimmed = text.trim();
   if (!trimmed) return [];
 
@@ -382,8 +389,8 @@ export function parseSmartLinkDump(text: string): DetectedSiteData[] {
     const rawChunks = trimmed.split(/(?:^|\n)(?:[-=]{3,}|(?:Site|Client)\s*\d*\s*[:=-])/i).filter(Boolean);
     if (rawChunks.length > 1) {
       const results: DetectedSiteData[] = [];
-      for (const chunk of rawChunks) {
-        const parsed = parseSingleSiteDump(chunk);
+      for (let i = 0; i < rawChunks.length; i++) {
+        const parsed = parseSingleSiteDump(rawChunks[i], startIndex + i);
         if (parsed.rawMatchesCount > 0 || parsed.name !== 'New Vault Entry') {
           results.push(parsed);
         }
@@ -395,7 +402,7 @@ export function parseSmartLinkDump(text: string): DetectedSiteData[] {
   // Check for double-newline sections that have distinct URLs
   const doubleNewlineSections = trimmed.split(/\n\s*\n+/).filter((s) => s.trim().length > 0);
   if (doubleNewlineSections.length > 1) {
-    const potentialSites = doubleNewlineSections.map((sec) => parseSingleSiteDump(sec));
+    const potentialSites = doubleNewlineSections.map((sec, i) => parseSingleSiteDump(sec, startIndex + i));
     // If multiple sections each have at least 1 URL or name
     const validSections = potentialSites.filter((p) => p.rawMatchesCount >= 2);
     if (validSections.length > 1) {
@@ -404,5 +411,5 @@ export function parseSmartLinkDump(text: string): DetectedSiteData[] {
   }
 
   // Default: single site
-  return [parseSingleSiteDump(trimmed)];
+  return [parseSingleSiteDump(trimmed, startIndex)];
 }

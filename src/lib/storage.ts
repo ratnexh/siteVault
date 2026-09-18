@@ -1,4 +1,4 @@
-import { SiteEntry, ViewMode, SortOption } from '@/types/site';
+import { SiteEntry, ViewMode, SortOption, SiteColor } from '@/types/site';
 import { DEFAULT_SITES } from './constants';
 
 const STORAGE_KEY = 'sitevault_v2_data';
@@ -7,6 +7,25 @@ const THEME_KEY = 'sitevault_theme';
 const DISMISS_BANNER_KEY = 'sitevault_dismiss_backup';
 const VIEW_MODE_KEY = 'sitevault_view_mode';
 const SORT_KEY = 'sitevault_sort_by';
+const QUICK_COLOR_SYNC_KEY = 'sitevault_quick_colors_synced_v3';
+
+export const QUICK_MENU_PALETTE: SiteColor[] = ['indigo', 'rose', 'emerald', 'blue', 'amber', 'purple'];
+
+export function getQuickMenuColor(index: number): SiteColor {
+  return QUICK_MENU_PALETTE[Math.abs(index) % QUICK_MENU_PALETTE.length];
+}
+
+export function syncSiteColorsWithQuickMenu(sites: SiteEntry[]): SiteEntry[] {
+  return sites.map((site, idx) => {
+    if (site.color && site.color.startsWith('#')) {
+      return site;
+    }
+    return {
+      ...site,
+      color: getQuickMenuColor(idx),
+    };
+  });
+}
 
 export function loadSavedSites(): SiteEntry[] {
   if (typeof window === 'undefined') return [];
@@ -18,7 +37,17 @@ export function loadSavedSites(): SiteEntry[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+
+    // Migrate/sync existing stored sites to match quick menu palette
+    if (!localStorage.getItem(QUICK_COLOR_SYNC_KEY)) {
+      const synced = syncSiteColorsWithQuickMenu(parsed);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(synced));
+      localStorage.setItem(QUICK_COLOR_SYNC_KEY, 'true');
+      return synced;
+    }
+
+    return parsed;
   } catch (e) {
     return [];
   }
@@ -60,14 +89,160 @@ export function setSavedTheme(theme: 'dark' | 'light'): void {
   }
 }
 
+const LAST_BACKUP_TIME_KEY = 'sitevault_last_backup_time';
+const BACKUP_SNOOZE_UNTIL_KEY = 'sitevault_backup_snooze_until';
+const CHANGES_SINCE_BACKUP_KEY = 'sitevault_changes_since_backup';
+
+export function recordBackupDownloaded(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(LAST_BACKUP_TIME_KEY, Date.now().toString());
+  localStorage.setItem(CHANGES_SINCE_BACKUP_KEY, '0');
+  localStorage.removeItem(BACKUP_SNOOZE_UNTIL_KEY);
+  sessionStorage.setItem(DISMISS_BANNER_KEY, 'true');
+}
+
+export function recordSiteChange(): void {
+  if (typeof window === 'undefined') return;
+  const current = parseInt(localStorage.getItem(CHANGES_SINCE_BACKUP_KEY) || '0', 10);
+  localStorage.setItem(CHANGES_SINCE_BACKUP_KEY, (current + 1).toString());
+}
+
+export function dismissBackupBanner(days = 14): void {
+  if (typeof window === 'undefined') return;
+  sessionStorage.setItem(DISMISS_BANNER_KEY, 'true');
+  const snoozeUntil = Date.now() + days * 24 * 60 * 60 * 1000;
+  localStorage.setItem(BACKUP_SNOOZE_UNTIL_KEY, snoozeUntil.toString());
+}
+
+export interface BackupRecommendation {
+  shouldShowBanner: boolean;
+  isOutdated: boolean;
+  reason: 'never_backed_up' | 'many_changes' | 'stale_backup' | 'up_to_date';
+  unbackedCount: number;
+  message: string;
+}
+
+export function getBackupRecommendation(sites: SiteEntry[]): BackupRecommendation {
+  if (typeof window === 'undefined' || !sites || sites.length === 0) {
+    return {
+      shouldShowBanner: false,
+      isOutdated: false,
+      reason: 'up_to_date',
+      unbackedCount: 0,
+      message: 'All sites are backed up.'
+    };
+  }
+
+  // Check if session snoozed
+  if (sessionStorage.getItem(DISMISS_BANNER_KEY) === 'true') {
+    return {
+      shouldShowBanner: false,
+      isOutdated: false,
+      reason: 'up_to_date',
+      unbackedCount: 0,
+      message: 'Backup banner snoozed.'
+    };
+  }
+
+  // Check if localStorage snoozed
+  const snoozeUntil = parseInt(localStorage.getItem(BACKUP_SNOOZE_UNTIL_KEY) || '0', 10);
+  const now = Date.now();
+  if (snoozeUntil && now < snoozeUntil) {
+    return {
+      shouldShowBanner: false,
+      isOutdated: false,
+      reason: 'up_to_date',
+      unbackedCount: 0,
+      message: 'Backup banner snoozed.'
+    };
+  }
+
+  const lastBackupStr = localStorage.getItem(LAST_BACKUP_TIME_KEY);
+  const recordedChanges = parseInt(localStorage.getItem(CHANGES_SINCE_BACKUP_KEY) || '0', 10);
+
+  // Case 1: Never backed up before
+  if (!lastBackupStr) {
+    const hasCredentials = sites.some(s => s.credentials?.password || s.credentials?.email);
+    // Only prompt if user has accumulated at least 3 sites or sensitive credentials
+    if (sites.length >= 3 || hasCredentials) {
+      return {
+        shouldShowBanner: true,
+        isOutdated: true,
+        reason: 'never_backed_up',
+        unbackedCount: sites.length,
+        message: `You have ${sites.length} client ${sites.length === 1 ? 'site' : 'sites'} stored locally with no backup on file.`
+      };
+    }
+    return {
+      shouldShowBanner: false,
+      isOutdated: false,
+      reason: 'up_to_date',
+      unbackedCount: 0,
+      message: 'No backup needed yet.'
+    };
+  }
+
+  const lastBackupTime = parseInt(lastBackupStr, 10);
+  const daysSinceBackup = Math.floor((now - lastBackupTime) / (1000 * 60 * 60 * 24));
+
+  // Count sites modified after the last backup
+  const modifiedSites = sites.filter(s => {
+    if (!s.updatedAt) return false;
+    return new Date(s.updatedAt).getTime() > lastBackupTime;
+  });
+
+  const unbackedCount = Math.max(recordedChanges, modifiedSites.length);
+
+  // If no sites were modified or added since last backup:
+  if (unbackedCount === 0) {
+    return {
+      shouldShowBanner: false,
+      isOutdated: false,
+      reason: 'up_to_date',
+      unbackedCount: 0,
+      message: 'Your backup is up to date.'
+    };
+  }
+
+  // Case 2: Substantial changes (5+ sites modified or added)
+  if (unbackedCount >= 5) {
+    return {
+      shouldShowBanner: true,
+      isOutdated: true,
+      reason: 'many_changes',
+      unbackedCount,
+      message: `${unbackedCount} updates made since your last backup.`
+    };
+  }
+
+  // Case 3: Stale backup (> 14 days ago) and at least 1 change exists
+  if (daysSinceBackup >= 14 && unbackedCount >= 1) {
+    return {
+      shouldShowBanner: true,
+      isOutdated: true,
+      reason: 'stale_backup',
+      unbackedCount,
+      message: `Last backup was ${daysSinceBackup} days ago with unbacked updates.`
+    };
+  }
+
+  // Otherwise: minor edits, don't interrupt the user with a banner
+  return {
+    shouldShowBanner: false,
+    isOutdated: true,
+    reason: 'up_to_date',
+    unbackedCount,
+    message: `${unbackedCount} minor update(s) since last backup.`
+  };
+}
+
 export function isBackupBannerDismissed(): boolean {
   if (typeof window === 'undefined') return false;
   return sessionStorage.getItem(DISMISS_BANNER_KEY) === 'true';
 }
 
 export function setBackupBannerDismissed(): void {
-  if (typeof window === 'undefined') return;
-  sessionStorage.setItem(DISMISS_BANNER_KEY, 'true');
+  dismissBackupBanner(14);
 }
 
 export function getSavedViewMode(): ViewMode {

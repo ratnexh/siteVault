@@ -34,7 +34,8 @@ export const SiteCard: React.FC<SiteCardProps> = ({
   onDelete,
   onCopy,
 }) => {
-  const theme = getThemeClasses(site.color || 'indigo');
+  const siteColor = site.color || 'indigo';
+  const theme = getThemeClasses(siteColor);
   const initial = site.name.trim().charAt(0).toUpperCase();
 
   const passDisplay = site.credentials?.password
@@ -51,7 +52,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
           <div className="flex items-center gap-3 min-w-0">
             <div
               className={`w-10 h-10 rounded-xl ${theme.bg} text-white font-bold flex items-center justify-center text-sm shadow-sm shrink-0`}
-              style={site.color?.startsWith('#') ? { backgroundColor: site.color } : undefined}
+              style={siteColor.startsWith('#') ? { backgroundColor: siteColor } : undefined}
             >
               {initial}
             </div>

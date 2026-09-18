@@ -27,7 +27,8 @@ export const SiteTable: React.FC<SiteTableProps> = ({ sites, onEdit, onDelete })
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {sites.map((site) => {
-              const theme = getThemeClasses(site.color || 'indigo');
+              const siteColor = site.color || 'indigo';
+              const theme = getThemeClasses(siteColor);
               const initial = site.name.trim().charAt(0).toUpperCase();
 
               return (
@@ -36,7 +37,7 @@ export const SiteTable: React.FC<SiteTableProps> = ({ sites, onEdit, onDelete })
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-8 h-8 rounded-lg ${theme.bg} text-white font-bold flex items-center justify-center text-xs shadow-sm shrink-0`}
-                        style={site.color?.startsWith('#') ? { backgroundColor: site.color } : undefined}
+                        style={siteColor.startsWith('#') ? { backgroundColor: siteColor } : undefined}
                       >
                         {initial}
                       </div>

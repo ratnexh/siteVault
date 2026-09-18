@@ -27,6 +27,7 @@ interface SmartAddModalProps {
   onClose: () => void;
   onSaveSites: (sites: (Omit<SiteEntry, 'id' | 'updatedAt'> & { id?: string })[]) => void;
   onOpenFullFormWithData: (data: Omit<SiteEntry, 'id' | 'updatedAt'>) => void;
+  existingSitesCount?: number;
 }
 
 const SAMPLE_TEXT = `Client: Hong Kong Cardiology Hub
@@ -45,6 +46,7 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({
   onClose,
   onSaveSites,
   onOpenFullFormWithData,
+  existingSitesCount = 0,
 }) => {
   const [inputText, setInputText] = useState('');
   const [activeSiteIndex, setActiveSiteIndex] = useState(0);
@@ -55,8 +57,8 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({
   // Auto-parse on text change
   const parsedSites = useMemo(() => {
     if (!inputText.trim()) return [];
-    return parseSmartLinkDump(inputText);
-  }, [inputText]);
+    return parseSmartLinkDump(inputText, existingSitesCount);
+  }, [inputText, existingSitesCount]);
 
   // Reset override whenever input text completely changes
   useEffect(() => {

@@ -15,7 +15,13 @@ import {
   setSavedViewMode,
   getSavedSortOption,
   setSavedSortOption,
-  exportVaultJSON 
+  exportVaultJSON,
+  syncSiteColorsWithQuickMenu,
+  getQuickMenuColor,
+  getBackupRecommendation,
+  recordBackupDownloaded,
+  recordSiteChange,
+  dismissBackupBanner
 } from '@/lib/storage';
 
 import { Header } from '@/components/Header';
@@ -99,6 +105,20 @@ export default function Home() {
 
     setIsLoaded(true);
   }, []);
+
+  // Smart backup recommendation
+  const backupRecommendation = useMemo(() => {
+    if (!isLoaded) {
+      return {
+        shouldShowBanner: false,
+        isOutdated: false,
+        reason: 'up_to_date' as const,
+        unbackedCount: 0,
+        message: ''
+      };
+    }
+    return getBackupRecommendation(sites);
+  }, [sites, isLoaded, showBackupBanner]);
 
   // Sync to storage on state change
   useEffect(() => {
@@ -185,7 +205,9 @@ export default function Home() {
   // Export JSON
   const handleExportJSON = () => {
     exportVaultJSON(sites);
-    showToast('Vault backup JSON downloaded', 'success');
+    recordBackupDownloaded();
+    setShowBackupBanner(false);
+    showToast('Vault backup JSON downloaded & snapshot recorded!', 'success');
   };
 
   // Import JSON
@@ -198,8 +220,10 @@ export default function Home() {
       try {
         const imported = JSON.parse(event.target?.result as string);
         if (Array.isArray(imported)) {
-          setSites(imported);
-          showToast(`Imported ${imported.length} sites successfully!`, 'success');
+          const synced = syncSiteColorsWithQuickMenu(imported);
+          setSites(synced);
+          saveSitesToStorage(synced);
+          showToast(`Imported ${synced.length} sites successfully!`, 'success');
         } else {
           showToast('Invalid backup format', 'error');
         }
@@ -229,8 +253,16 @@ export default function Home() {
   // Dismiss Banner
   const handleDismissBanner = () => {
     setShowBackupBanner(false);
-    setBackupBannerDismissed();
-    showToast('Backup notice dismissed for this session', 'info');
+    dismissBackupBanner(14);
+    showToast('Backup notice snoozed for 14 days', 'info');
+  };
+
+  // Sync badge colors with quick menu
+  const handleSyncColors = () => {
+    const synced = syncSiteColorsWithQuickMenu(sites);
+    setSites(synced);
+    saveSitesToStorage(synced);
+    showToast('Badge colors synced with quick menu!', 'success');
   };
 
   // Save Site (Add / Edit)
@@ -241,15 +273,18 @@ export default function Home() {
       setSites((prev) =>
         prev.map((s) => (s.id === siteData.id ? ({ ...s, ...siteData, updatedAt: nowIso } as SiteEntry) : s))
       );
+      recordSiteChange();
       showToast('Site entry updated successfully', 'success');
     } else {
       // Create new
       const newEntry: SiteEntry = {
         ...siteData,
+        color: siteData.color || getQuickMenuColor(sites.length),
         id: `site_${Date.now()}`,
         updatedAt: nowIso,
       };
       setSites((prev) => [newEntry, ...prev]);
+      recordSiteChange();
       showToast('New site entry added to vault', 'success');
     }
     setIsSiteModalOpen(false);
@@ -266,6 +301,7 @@ export default function Home() {
       updatedAt: nowIso,
     }));
     setSites((prev) => [...created, ...prev]);
+    recordSiteChange();
     showToast(
       created.length === 1
         ? `"${created[0].name}" added to vault via Smart Add!`
@@ -289,6 +325,7 @@ export default function Home() {
       `Are you sure you want to remove "${target.name}" from your vault? Credentials and endpoint links will be deleted.`,
       () => {
         setSites((prev) => prev.filter((s) => s.id !== siteId));
+        recordSiteChange();
         showToast(`"${target.name}" removed from vault`, 'info');
       },
       {
@@ -337,14 +374,16 @@ export default function Home() {
         onToggleDarkMode={handleToggleDarkMode}
         onOpenAddModal={() => {
           setEditingSite(null);
-          setModalInitialData(null);
+          setModalInitialData({ color: getQuickMenuColor(sites.length) });
           setIsSiteModalOpen(true);
         }}
         onFocusSearch={() => searchInputRef.current?.focus()}
         onExportJSON={handleExportJSON}
         onImportJSON={handleImportJSON}
         onResetDefault={handleResetDefault}
+        onSyncColors={handleSyncColors}
         onToggleMobileSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+        isBackupNeeded={backupRecommendation.isOutdated}
       />
 
       {/* Main Layout */}
@@ -370,10 +409,13 @@ export default function Home() {
 
         <main className="flex-1 min-w-0 flex flex-col gap-5">
           
-          {showBackupBanner && (
+          {showBackupBanner && backupRecommendation.shouldShowBanner && (
             <BackupAlertBanner
               onDownloadBackup={handleExportJSON}
               onDismiss={handleDismissBanner}
+              message={backupRecommendation.message}
+              reason={backupRecommendation.reason}
+              unbackedCount={backupRecommendation.unbackedCount}
             />
           )}
 
@@ -459,6 +501,7 @@ export default function Home() {
         onClose={() => setIsSmartAddModalOpen(false)}
         onSaveSites={handleSaveMultipleSites}
         onOpenFullFormWithData={handleOpenFullFormWithData}
+        existingSitesCount={sites.length}
       />
 
       <SiteModal

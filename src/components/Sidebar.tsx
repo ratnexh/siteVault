@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { SiteEntry, SiteColor } from '@/types/site';
-import { getThemeClasses } from '@/lib/storage';
+import { getThemeClasses, getQuickMenuColor } from '@/lib/storage';
 import { ChevronRight, X, LayoutGrid } from 'lucide-react';
 import { SiteLogo } from '@/components/SiteLogo';
 
@@ -91,9 +91,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
 
             {sites.map((site, idx) => {
-              const AVATAR_PALETTE: SiteColor[] = ['indigo', 'rose', 'emerald', 'blue', 'amber', 'purple'];
-              const avatarColor = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
-              const theme = getThemeClasses(avatarColor);
+              const siteColor = site.color || getQuickMenuColor(idx);
+              const theme = getThemeClasses(siteColor);
               const isSelected = activeSiteName?.toLowerCase() === site.name.toLowerCase();
 
               return (
@@ -109,7 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span className="flex items-center gap-2 truncate">
                     <span
                       className={`w-5 h-5 rounded-md ${theme.bg} text-white font-bold text-[10px] flex items-center justify-center shrink-0 shadow-xs`}
-                      style={site.color?.startsWith('#') ? { backgroundColor: site.color } : undefined}
+                      style={siteColor.startsWith('#') ? { backgroundColor: siteColor } : undefined}
                     >
                       {site.name.charAt(0).toUpperCase()}
                     </span>
